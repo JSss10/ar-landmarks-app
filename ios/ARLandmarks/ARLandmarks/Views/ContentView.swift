@@ -8,8 +8,16 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
     var body: some View {
-        LandmarkListView()
+        Group {
+            if hasCompletedOnboarding {
+                LandmarkListView()
+            } else {
+                OnboardingView()
+            }
+        }
     }
 }
 
