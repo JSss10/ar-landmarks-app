@@ -54,11 +54,23 @@ struct OverviewView: View {
         VStack(spacing: 24) {
             ZStack {
                 Circle()
-                    .fill(Color.blue.opacity(0.15))
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.15), Color.purple.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .frame(width: 160, height: 160)
 
                 Circle()
-                    .fill(Color.blue.opacity(0.25))
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.25), Color.purple.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .frame(width: 120, height: 120)
 
                 Image(systemName: "map.fill")

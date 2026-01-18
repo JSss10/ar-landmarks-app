@@ -15,32 +15,27 @@ struct OnboardingView: View {
         OnboardingPage(
             icon: "map.fill",
             title: "Welcome to\nAR Landmarks",
-            description: "Discover landmarks around you with the power of Augmented Reality",
-            accentColor: .blue
+            description: "Discover landmarks around you with the power of Augmented Reality"
         ),
         OnboardingPage(
             icon: "arkit",
             title: "AR Experience",
-            description: "View landmarks in AR and get detailed information about history, architecture and more",
-            accentColor: .purple
+            description: "View landmarks in AR and get detailed information about history, architecture and more"
         ),
         OnboardingPage(
             icon: "camera.viewfinder",
             title: "Two Discovery Modes",
-            description: "Use visual recognition or GPS-based view to find landmarks around you",
-            accentColor: .green
+            description: "Use visual recognition or GPS-based view to find landmarks around you"
         ),
         OnboardingPage(
             icon: "location.fill",
             title: "Permissions",
-            description: "We need access to camera and location to show you landmarks in AR",
-            accentColor: .orange
+            description: "We need access to camera and location to show you landmarks in AR"
         ),
         OnboardingPage(
             icon: "checkmark.circle.fill",
             title: "Ready to Start!",
-            description: "Begin your journey and discover fascinating landmarks nearby",
-            accentColor: .blue
+            description: "Begin your journey and discover fascinating landmarks nearby"
         )
     ]
 
@@ -48,7 +43,8 @@ struct OnboardingView: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    pages[currentPage].accentColor.opacity(0.1),
+                    Color.blue.opacity(0.1),
+                    Color.purple.opacity(0.05),
                     Color(.systemBackground)
                 ],
                 startPoint: .topLeading,
@@ -69,7 +65,9 @@ struct OnboardingView: View {
                 VStack(spacing: 24) {
                     pageIndicator
 
-                    actionButton
+                    if currentPage == pages.count - 1 {
+                        actionButton
+                    }
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 40)
@@ -81,7 +79,18 @@ struct OnboardingView: View {
         HStack(spacing: 8) {
             ForEach(0..<pages.count, id: \.self) { index in
                 Capsule()
-                    .fill(currentPage == index ? pages[currentPage].accentColor : Color.gray.opacity(0.3))
+                    .fill(currentPage == index ?
+                        LinearGradient(
+                            colors: [.blue, .purple],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        ) :
+                        LinearGradient(
+                            colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.3)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                     .frame(width: currentPage == index ? 24 : 8, height: 8)
                     .animation(.spring(response: 0.3), value: currentPage)
             }
@@ -90,21 +99,22 @@ struct OnboardingView: View {
 
     private var actionButton: some View {
         Button {
-            if currentPage < pages.count - 1 {
-                withAnimation {
-                    currentPage += 1
-                }
-            } else {
-                completeOnboarding()
-            }
+            completeOnboarding()
         } label: {
-            Text(currentPage < pages.count - 1 ? "Next" : "Let's Go!")
+            Text("Let's Go!")
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(pages[currentPage].accentColor)
+                .background(
+                    LinearGradient(
+                        colors: [.blue, .purple],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
                 .cornerRadius(16)
+                .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
         }
     }
 
@@ -119,7 +129,6 @@ struct OnboardingPage {
     let icon: String
     let title: String
     let description: String
-    let accentColor: Color
 }
 
 struct OnboardingPageView: View {
@@ -131,18 +140,30 @@ struct OnboardingPageView: View {
 
             ZStack {
                 Circle()
-                    .fill(page.accentColor.opacity(0.15))
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.15), Color.purple.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .frame(width: 200, height: 200)
 
                 Circle()
-                    .fill(page.accentColor.opacity(0.25))
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.25), Color.purple.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .frame(width: 160, height: 160)
 
                 Image(systemName: page.icon)
                     .font(.system(size: 70, weight: .medium))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [page.accentColor, page.accentColor.opacity(0.7)],
+                            colors: [.blue, .purple],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
