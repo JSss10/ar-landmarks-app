@@ -14,9 +14,22 @@
 		27F2648E2F1C0179003F765A /* ARLandmarks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ARLandmarks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		27F264A02F1C0400003F765A /* Exceptions for "ARLandmarks" folder in "Copy Bundle Resources" phase from "ARLandmarks" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			buildPhase = 27F2648C2F1C0179003F765A /* Resources */;
+			membershipExceptions = (
+				Info.plist,
+			);
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		27F264902F1C0179003F765A /* ARLandmarks */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				27F264A02F1C0400003F765A /* Exceptions for "ARLandmarks" folder in "Copy Bundle Resources" phase from "ARLandmarks" target */,
+			);
 			path = ARLandmarks;
 			sourceTree = "<group>";
 		};
