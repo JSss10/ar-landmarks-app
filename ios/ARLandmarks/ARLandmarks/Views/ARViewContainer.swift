@@ -34,7 +34,7 @@ struct ARViewContainer: UIViewRepresentable {
         )
         arView.addGestureRecognizer(tapGesture)
 
-        print("Landmarks gesetzt: \(landmarks.count)")
+        print("Landmarks set: \(landmarks.count)")
 
         return arView
     }
@@ -45,6 +45,14 @@ struct ARViewContainer: UIViewRepresentable {
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
+    }
+
+    static func dismantleUIView(_ arView: ARView, coordinator: Coordinator) {
+        arView.session.pause()
+
+        coordinator.stopLocationUpdates()
+
+        coordinator.cleanupAllPOIs()
     }
 
     // MARK: - Coordinator
@@ -64,8 +72,10 @@ struct ARViewContainer: UIViewRepresentable {
             super.init()
 
             locationManager.delegate = self
-            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-            locationManager.distanceFilter = 5
+            locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            locationManager.distanceFilter = 10
+            locationManager.headingFilter = 10
+            locationManager.activityType = .fitness
         }
 
         func startLocationUpdates() {
@@ -74,13 +84,24 @@ struct ARViewContainer: UIViewRepresentable {
             locationManager.startUpdatingHeading()
         }
 
+        func stopLocationUpdates() {
+            locationManager.stopUpdatingLocation()
+            locationManager.stopUpdatingHeading()
+        }
+
+        func cleanupAllPOIs() {
+            guard let arView = arView else { return }
+            arView.scene.anchors.removeAll()
+            placedLandmarkIds.removeAll()
+        }
+
         // MARK: - CLLocationManagerDelegate
 
         func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
             guard let location = locations.last else { return }
             currentLocation = location
 
-            print("📍 Location Update: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+            print("Location Update: \(location.coordinate.latitude), \(location.coordinate.longitude)")
 
             updatePOIs()
         }
@@ -90,7 +111,7 @@ struct ARViewContainer: UIViewRepresentable {
         }
 
         func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-            print("Standort Fehler: \(error.localizedDescription)")
+            print("Location error: \(error.localizedDescription)")
         }
 
         // MARK: - POI Management
@@ -98,11 +119,12 @@ struct ARViewContainer: UIViewRepresentable {
         private func updatePOIs() {
             guard let arView = arView,
                   let userLocation = currentLocation else {
-                print("Kein Standort verfügbar")
+                print("Location unavailable")
                 return
             }
 
-            let nearbyLandmarks = findNearbyLandmarks(userLocation: userLocation, radius: 2000)
+            let maxPOIDistance = 500.0
+            let nearbyLandmarks = findNearbyLandmarks(userLocation: userLocation, radius: maxPOIDistance)
 
             for landmark in nearbyLandmarks {
                 if !placedLandmarkIds.contains(landmark.id) {
@@ -110,11 +132,47 @@ struct ARViewContainer: UIViewRepresentable {
                     placedLandmarkIds.insert(landmark.id)
                 }
             }
+
+            cleanupDistantPOIs(userLocation: userLocation, maxDistance: maxPOIDistance * 1.5)
+        }
+
+        private func cleanupDistantPOIs(userLocation: CLLocation, maxDistance: Double) {
+            guard let arView = arView else { return }
+
+            var idsToRemove = Set<String>()
+
+            for landmarkId in placedLandmarkIds {
+                guard let landmark = landmarks.first(where: { $0.id == landmarkId }) else {
+                    idsToRemove.insert(landmarkId)
+                    continue
+                }
+
+                let landmarkLocation = CLLocation(
+                    latitude: landmark.latitude,
+                    longitude: landmark.longitude
+                )
+                let distance = userLocation.distance(from: landmarkLocation)
+
+                if distance > maxDistance {
+                    if let anchor = arView.scene.anchors.first(where: { anchor in
+                        anchor.children.contains { $0.name == landmarkId }
+                    }) {
+                        arView.scene.removeAnchor(anchor)
+                    }
+                    idsToRemove.insert(landmarkId)
+                }
+            }
+
+            placedLandmarkIds.subtract(idsToRemove)
+
+            if !idsToRemove.isEmpty {
+                print("Cleaned up \(idsToRemove.count) distant POIs")
+            }
         }
 
         private func findNearbyLandmarks(userLocation: CLLocation, radius: Double) -> [Landmark] {
-            print("Suche Landmarks in der Nähe von: \(userLocation.coordinate.latitude), \(userLocation.coordinate.longitude)")
-            print("Anzahl allLandmarks: \(landmarks.count)")
+            print("Search for landmarks near: \(userLocation.coordinate.latitude), \(userLocation.coordinate.longitude)")
+            print("Number of allLandmarks: \(landmarks.count)")
 
             let nearbyLandmarks = landmarks.filter { landmark in
                 let landmarkLocation = CLLocation(
@@ -126,7 +184,7 @@ struct ARViewContainer: UIViewRepresentable {
                 return distance <= radius
             }
 
-            print("Nearby Landmarks gefunden: \(nearbyLandmarks.count)")
+            print("Nearby landmarks found: \(nearbyLandmarks.count)")
             return nearbyLandmarks
         }
 
@@ -161,7 +219,7 @@ struct ARViewContainer: UIViewRepresentable {
             anchorEntity.addChild(sphereEntity)
             arView.scene.addAnchor(anchorEntity)
 
-            print("POI erstellt: \(landmark.name) bei \(position) mit ID \(landmark.id)")
+            print("POI created: \(landmark.name) at \(position) with ID \(landmark.id)")
         }
 
         private func calculateBearing(from: CLLocation, to: CLLocation) -> Double {
@@ -184,27 +242,27 @@ struct ARViewContainer: UIViewRepresentable {
             guard let arView = gesture.view as? ARView else { return }
             let location = gesture.location(in: arView)
 
-            print("Angeklickt bei: \(location)")
+            print("Clicked at: \(location)")
 
             let hits = arView.hitTest(location)
-            print("Treffer: \(hits.count)")
+            print("Hit count: \(hits.count)")
 
             if let firstHit = hits.first {
                 let entityName = firstHit.entity.name
-                print("Treffer Objektname: '\(entityName)'")
+                print("Match object name: '\(entityName)'")
 
-                print("Verfügbare Wahrzeichen: \(landmarks.map { $0.id })")
+                print("Available landmarks: \(landmarks.map { $0.id })")
 
                 if let landmark = landmarks.first(where: { $0.id == entityName }) {
-                    print("Gefundenes Wahrzeichen: \(landmark.name)")
+                    print("Landmark found: \(landmark.name)")
                     DispatchQueue.main.async {
                         self.parent.selectedLandmark = landmark
                     }
                 } else {
-                    print("Kein Wahrzeichen gefunden für ID: \(entityName)")
+                    print("No landmark found for ID: \(entityName)")
                 }
             } else {
-                print("Klick auf leeren Bereich - Auswahl aufheben")
+                print("Click on empty area - deselect")
                 DispatchQueue.main.async {
                     self.parent.selectedLandmark = nil
                 }

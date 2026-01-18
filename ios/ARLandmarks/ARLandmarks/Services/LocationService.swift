@@ -38,8 +38,10 @@ class LocationService: NSObject, ObservableObject {
     override init() {
         super.init()
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.headingFilter = 5
+        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+        locationManager.headingFilter = 10
+        locationManager.distanceFilter = 10
+        locationManager.activityType = .fitness
     }
     
     func requestPermission() {
