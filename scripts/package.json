@@ -1,0 +1,17 @@
+{
+  "name": "zurich-poi-sync",
+  "version": "1.0.0",
+  "description": "Sync script for Zurich Tourism API POI data",
+  "type": "module",
+  "scripts": {
+    "sync": "node sync-zurich-pois.js",
+    "sync:dev": "node --watch sync-zurich-pois.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.90.1",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

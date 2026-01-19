@@ -26,8 +26,23 @@ export interface Landmark {
   is_active: boolean
   created_at: string
   updated_at: string
+  street_address: string | null
+  postal_code: string | null
+  city: string | null
+  phone: string | null
+  email: string | null
+  website_url: string | null
+  promotional_text: string | null
+  promotional_text_en: string | null
+  opening_hours: string | null
+  opening_hours_data: Record<string, any> | null
+  api_source: string | null
+  api_raw_data: Record<string, any> | null
+  last_synced_at: string | null
   // Joined
   category?: Category
+  photos?: LandmarkPhoto[]
+  categories?: Category[]
 }
 
 export interface LandmarkFact {
@@ -39,4 +54,24 @@ export interface LandmarkFact {
   content_en: string | null
   sort_order: number
   created_at: string
+}
+
+export interface LandmarkPhoto {
+  id: string
+  landmark_id: string
+  photo_url: string
+  caption: string | null
+  caption_en: string | null
+  sort_order: number
+  is_primary: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface LandmarkCategory {
+  id: string
+  landmark_id: string
+  category_id: string
+  created_at: string
+  category?: Category
 }
