@@ -271,9 +271,6 @@ export default function Home() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {landmark.latitude.toFixed(4)}, {landmark.longitude.toFixed(4)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {landmark.year_built || '–'}
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs rounded-full ${landmark.is_active
                         ? 'bg-green-100 text-green-800'

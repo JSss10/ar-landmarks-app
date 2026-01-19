@@ -93,8 +93,6 @@ async function linkLandmarkCategory(landmarkId: string, categoryId: string): Pro
 function transformPOI(poi: any) {
   const nameEn = poi.name?.en || poi.name?.de || 'Unknown';
   const descriptionEn = stripHtml(poi.description?.en) || stripHtml(poi.disambiguatingDescription?.en);
-  const promotionalTextEn = poi.textTeaser?.en || poi.disambiguatingDescription?.en;
-
   const primaryImage = poi.image?.url || (poi.photo && poi.photo[0]?.url) || null;
   const address = poi.address || {};
   const coords = poi.geoCoordinates || {};
@@ -114,7 +112,6 @@ function transformPOI(poi: any) {
     phone: address.telephone,
     email: address.email,
     website_url: address.url,
-    promotional_text_en: promotionalTextEn,
     image_url: primaryImage,
     zurich_tourism_id: poi.identifier,
     api_source: 'zurich_tourism',
@@ -123,7 +120,6 @@ function transformPOI(poi: any) {
     is_active: true,
     category_name: categoryName,
     opening_hours: poi.openingHours,
-    opening_hours_data: poi.openingHoursSpecification,
     photos: poi.photo || []
   };
 }

@@ -25,11 +25,8 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark, ca
     latitude: '',
     longitude: '',
     altitude: '',
-    year_built: '',
-    architect: '',
     category_id: '',
     image_url: '',
-    wikipedia_url: '',
     zurich_tourism_id: '',
     is_active: true,
   })
@@ -47,11 +44,8 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark, ca
         latitude: landmark.latitude?.toString() || '',
         longitude: landmark.longitude?.toString() || '',
         altitude: landmark.altitude?.toString() || '',
-        year_built: landmark.year_built?.toString() || '',
-        architect: landmark.architect || '',
         category_id: landmark.category_id || '',
         image_url: landmark.image_url || '',
-        wikipedia_url: landmark.wikipedia_url || '',
         zurich_tourism_id: landmark.zurich_tourism_id || '',
         is_active: landmark.is_active ?? true,
       })
@@ -64,11 +58,8 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark, ca
         latitude: '',
         longitude: '',
         altitude: '',
-        year_built: '',
-        architect: '',
         category_id: categories[0]?.id || '',
         image_url: '',
-        wikipedia_url: '',
         zurich_tourism_id: '',
         is_active: true,
       })
@@ -94,11 +85,8 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark, ca
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude),
         altitude: parseFloat(formData.altitude),
-        year_built: formData.year_built ? parseInt(formData.year_built) : null,
-        architect: formData.architect || null,
         category_id: formData.category_id || null,
         image_url: formData.image_url || null,
-        wikipedia_url: formData.wikipedia_url || null,
         zurich_tourism_id: formData.zurich_tourism_id || null,
         is_active: formData.is_active,
         updated_at: new Date().toISOString(),
@@ -192,19 +180,6 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark, ca
 
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Year Built
-            </label>
-            <input
-              type="number"
-              value={formData.year_built}
-              onChange={(e) => setFormData({ ...formData, year_built: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all text-slate-900 dark:text-white"
-              placeholder="1100"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               Latitude <span className="text-red-500">*</span>
             </label>
             <input
@@ -247,19 +222,6 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark, ca
               placeholder="408"
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Architect
-            </label>
-            <input
-              type="text"
-              value={formData.architect}
-              onChange={(e) => setFormData({ ...formData, architect: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all text-slate-900 dark:text-white"
-              placeholder="Unknown"
-            />
-          </div>
         </div>
 
         <div>
@@ -297,19 +259,6 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark, ca
               type="url"
               value={formData.image_url}
               onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all text-slate-900 dark:text-white"
-              placeholder="https://..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Wikipedia URL
-            </label>
-            <input
-              type="url"
-              value={formData.wikipedia_url}
-              onChange={(e) => setFormData({ ...formData, wikipedia_url: e.target.value })}
               className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all text-slate-900 dark:text-white"
               placeholder="https://..."
             />

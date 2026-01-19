@@ -118,8 +118,6 @@ function transformPOI(poi) {
   const descriptionEn =
     stripHtml(poi.description?.en) ||
     stripHtml(poi.disambiguatingDescription?.en);
-  const promotionalTextEn =
-    poi.textTeaser?.en || poi.disambiguatingDescription?.en;
 
   const primaryImage =
     poi.image?.url || (poi.photo && poi.photo[0]?.url) || null;
@@ -146,11 +144,7 @@ function transformPOI(poi) {
     phone: address.telephone,
     email: address.email,
     website_url: address.url,
-
-    promotional_text_en: promotionalTextEn,
-
     image_url: primaryImage,
-
     zurich_tourism_id: poi.identifier,
     api_source: "zurich_tourism",
     api_raw_data: poi,
@@ -160,7 +154,6 @@ function transformPOI(poi) {
 
     category_name: categoryName,
     opening_hours: poi.openingHours,
-    opening_hours_data: poi.openingHoursSpecification,
     photos: poi.photo || [],
   };
 }

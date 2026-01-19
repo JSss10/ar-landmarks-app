@@ -20,7 +20,7 @@ struct OnboardingView: View {
         OnboardingPage(
             icon: "arkit",
             title: "AR Experience",
-            description: "View landmarks in AR and get detailed information about history, architecture and more"
+            description: "View landmarks in AR and get detailed information about history and more"
         ),
         OnboardingPage(
             icon: "camera.viewfinder",

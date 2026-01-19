@@ -17,11 +17,8 @@ export interface Landmark {
   latitude: number
   longitude: number
   altitude: number
-  year_built: number | null
-  architect: string | null
   category_id: string | null
   image_url: string | null
-  wikipedia_url: string | null
   zurich_tourism_id: string | null
   is_active: boolean
   created_at: string
@@ -32,10 +29,7 @@ export interface Landmark {
   phone: string | null
   email: string | null
   website_url: string | null
-  promotional_text: string | null
-  promotional_text_en: string | null
   opening_hours: string | null
-  opening_hours_data: Record<string, any> | null
   api_source: string | null
   api_raw_data: Record<string, any> | null
   last_synced_at: string | null
@@ -43,17 +37,6 @@ export interface Landmark {
   category?: Category
   photos?: LandmarkPhoto[]
   categories?: Category[]
-}
-
-export interface LandmarkFact {
-  id: string
-  landmark_id: string
-  title: string
-  title_en: string | null
-  content: string
-  content_en: string | null
-  sort_order: number
-  created_at: string
 }
 
 export interface LandmarkPhoto {

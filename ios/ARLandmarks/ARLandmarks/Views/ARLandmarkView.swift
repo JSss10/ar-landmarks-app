@@ -221,7 +221,9 @@ struct ARLandmarkView: View {
 struct LandmarkDetailSheet: View {
     let landmark: Landmark
     let weather: Weather?
-    
+    @State private var photos: [LandmarkPhoto] = []
+    @State private var isLoadingPhotos = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -230,15 +232,15 @@ struct LandmarkDetailSheet: View {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color(hex: landmark.category?.color ?? "#3B82F6").opacity(0.15))
                             .frame(width: 64, height: 64)
-                        
+
                         Text(landmark.category?.icon ?? "📍")
                             .font(.system(size: 32))
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text(landmark.name)
                             .font(.system(size: 22, weight: .bold))
-                        
+
                         if let category = landmark.category {
                             Text(category.name)
                                 .font(.system(size: 15))
@@ -246,39 +248,47 @@ struct LandmarkDetailSheet: View {
                         }
                     }
                 }
-                
+
+                if !photos.isEmpty {
+                    photoGallery
+                }
+
                 Divider()
-                
+
                 if let description = landmark.description {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Beschreibung")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.secondary)
-                        
+
                         Text(description)
                             .font(.system(size: 15))
                     }
                 }
-                
+
+                if hasContactInfo {
+                    contactInfoSection
+                }
+
+                if let hours = landmark.openingHours {
+                    openingHoursSection(hours: hours)
+                }
+
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Details")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.secondary)
-                    
+
                     if let year = landmark.yearBuilt {
                         detailRow(icon: "calendar", title: "Baujahr", value: "\(year)")
                     }
-                    
-                    if let architect = landmark.architect {
-                        detailRow(icon: "person", title: "Architekt", value: architect)
-                    }
-                    
+
                     detailRow(
                         icon: "location",
                         title: "Koordinaten",
                         value: String(format: "%.4f°N, %.4f°E", landmark.latitude, landmark.longitude)
                     )
-                    
+
                     if landmark.altitude > 0 {
                         detailRow(icon: "arrow.up", title: "Höhe", value: "\(Int(landmark.altitude)) m")
                     }
@@ -287,8 +297,139 @@ struct LandmarkDetailSheet: View {
             .padding()
         }
         .presentationDragIndicator(.visible)
+        .task {
+            await loadPhotos()
+        }
     }
-    
+
+    private var photoGallery: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Fotos")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(photos) { photo in
+                        AsyncImage(url: URL(string: photo.photoUrl)) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(width: 200, height: 150)
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 200, height: 150)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                            case .failure:
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color.gray.opacity(0.2))
+                                        .frame(width: 200, height: 150)
+                                    Image(systemName: "photo")
+                                        .foregroundColor(.gray)
+                                }
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var hasContactInfo: Bool {
+        landmark.phone != nil || landmark.email != nil || landmark.websiteUrl != nil
+    }
+
+    private var contactInfoSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Kontakt")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+
+            if let phone = landmark.phone {
+                Link(destination: URL(string: "tel:\(phone)")!) {
+                    contactRow(icon: "phone", title: "Telefon", value: phone)
+                }
+            }
+
+            if let email = landmark.email {
+                Link(destination: URL(string: "mailto:\(email)")!) {
+                    contactRow(icon: "envelope", title: "E-Mail", value: email)
+                }
+            }
+
+            if let website = landmark.websiteUrl {
+                Link(destination: URL(string: website)!) {
+                    contactRow(icon: "globe", title: "Website", value: website)
+                }
+            }
+        }
+    }
+
+    private func openingHoursSection(hours: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Öffnungszeiten")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "clock")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .frame(width: 20)
+
+                Text(formatOpeningHours(hours))
+                    .font(.system(size: 14))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func loadPhotos() async {
+        isLoadingPhotos = true
+        do {
+            photos = try await SupabaseService.shared.fetchLandmarkPhotos(landmarkId: landmark.id)
+        } catch {
+            print("Failed to load photos: \(error)")
+        }
+        isLoadingPhotos = false
+    }
+
+    private func formatOpeningHours(_ hours: String) -> String {
+        hours.replacingOccurrences(of: ";", with: "\n")
+            .replacingOccurrences(of: "|", with: "\n")
+    }
+
+    private func contactRow(icon: String, title: String, value: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(.blue)
+                .frame(width: 20)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+
+                Text(value)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.blue)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12))
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 4)
+    }
+
     private func detailRow(icon: String, title: String, value: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)

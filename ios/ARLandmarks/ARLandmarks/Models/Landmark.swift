@@ -32,10 +32,8 @@ struct Landmark: Codable, Identifiable, Sendable, Equatable {
     let longitude: Double
     let altitude: Double
     let yearBuilt: Int?
-    let architect: String?
     let categoryId: String?
     let imageUrl: String?
-    let wikipediaUrl: String?
     let zurichTourismId: String?
     let isActive: Bool
     let createdAt: String
@@ -46,21 +44,17 @@ struct Landmark: Codable, Identifiable, Sendable, Equatable {
     let phone: String?
     let email: String?
     let websiteUrl: String?
-    let promotionalText: String?
-    let promotionalTextEn: String?
     let openingHours: String?
     let apiSource: String?
     let lastSyncedAt: String?
     let category: Category?
 
     enum CodingKeys: String, CodingKey {
-        case id, name, description, latitude, longitude, altitude, architect, category
+        case id, name, description, latitude, longitude, altitude, category
         case nameEn = "name_en"
         case descriptionEn = "description_en"
-        case yearBuilt = "year_built"
         case categoryId = "category_id"
         case imageUrl = "image_url"
-        case wikipediaUrl = "wikipedia_url"
         case zurichTourismId = "zurich_tourism_id"
         case isActive = "is_active"
         case createdAt = "created_at"
@@ -71,8 +65,6 @@ struct Landmark: Codable, Identifiable, Sendable, Equatable {
         case phone
         case email
         case websiteUrl = "website_url"
-        case promotionalText = "promotional_text"
-        case promotionalTextEn = "promotional_text_en"
         case openingHours = "opening_hours"
         case apiSource = "api_source"
         case lastSyncedAt = "last_synced_at"

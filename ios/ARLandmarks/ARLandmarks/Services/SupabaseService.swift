@@ -29,6 +29,11 @@ struct SupabaseService: Sendable {
         let query = "select=*&order=sort_order.asc"
         return try await request(path: "categories", query: query)
     }
+
+    func fetchLandmarkPhotos(landmarkId: String) async throws -> [LandmarkPhoto] {
+        let query = "select=*&landmark_id=eq.\(landmarkId)&order=sort_order.asc"
+        return try await request(path: "landmark_photos", query: query)
+    }
     
     // MARK: - Private Methods
 
