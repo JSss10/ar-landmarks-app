@@ -31,7 +31,6 @@ struct Landmark: Codable, Identifiable, Sendable, Equatable {
     let latitude: Double
     let longitude: Double
     let altitude: Double
-    let yearBuilt: Int?
     let categoryId: String?
     let imageUrl: String?
     let zurichTourismId: String?

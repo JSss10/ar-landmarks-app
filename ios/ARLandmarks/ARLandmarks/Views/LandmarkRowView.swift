@@ -32,13 +32,6 @@ struct LandmarkRowView: View {
                             .font(.system(size: 13))
                             .foregroundColor(Color(hex: category.color))
                     }
-                    
-                    Text("•")
-                        .foregroundColor(.secondary.opacity(0.5))
-                    
-                    Text(landmark.yearBuilt != nil ? "\(landmark.yearBuilt!)" : "Unbekannt")
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
                 }
             }
             

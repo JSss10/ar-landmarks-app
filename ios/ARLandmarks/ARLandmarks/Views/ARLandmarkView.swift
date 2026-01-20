@@ -279,10 +279,6 @@ struct LandmarkDetailSheet: View {
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.secondary)
 
-                    if let year = landmark.yearBuilt {
-                        detailRow(icon: "calendar", title: "Baujahr", value: "\(year)")
-                    }
-
                     detailRow(
                         icon: "location",
                         title: "Koordinaten",
