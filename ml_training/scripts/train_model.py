@@ -19,7 +19,19 @@ import time
 class LandmarkClassifier:
     """Wrapper for training a landmark classifier."""
 
-    def __init__(self, data_dir='ml_training/data', num_classes=None):
+    def __init__(self, data_dir=None, num_classes=None):
+        # Auto-detect data directory based on current location
+        if data_dir is None:
+            # Try relative to current directory first (if running from ml_training/)
+            if Path('data/train').exists():
+                data_dir = 'data'
+            # Otherwise try from parent directory
+            elif Path('ml_training/data/train').exists():
+                data_dir = 'ml_training/data'
+            else:
+                # Default to data/ and let error handling catch it
+                data_dir = 'data'
+
         self.data_dir = Path(data_dir)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.num_classes = num_classes or self._count_classes()
@@ -60,9 +72,55 @@ class LandmarkClassifier:
         classes = [d for d in train_dir.iterdir() if d.is_dir()]
         return len(classes)
 
+    def _create_validation_split(self, split_ratio=0.2):
+        """Create validation split from training data if it doesn't exist."""
+        import shutil
+        import random
+
+        train_dir = self.data_dir / 'train'
+        val_dir = self.data_dir / 'validation'
+
+        # If validation already exists, skip
+        if val_dir.exists() and any(val_dir.iterdir()):
+            return
+
+        print(f"\nCreating validation split ({int(split_ratio*100)}% of data)...")
+        val_dir.mkdir(parents=True, exist_ok=True)
+
+        # For each class folder
+        for class_dir in train_dir.iterdir():
+            if not class_dir.is_dir():
+                continue
+
+            class_name = class_dir.name
+            val_class_dir = val_dir / class_name
+            val_class_dir.mkdir(parents=True, exist_ok=True)
+
+            # Get all images
+            images = list(class_dir.glob('*.jpg')) + list(class_dir.glob('*.png')) + \
+                     list(class_dir.glob('*.jpeg')) + list(class_dir.glob('*.JPG'))
+
+            # Calculate validation size (at least 1 image)
+            val_size = max(1, int(len(images) * split_ratio))
+
+            # Randomly select validation images
+            random.seed(42)  # For reproducibility
+            val_images = random.sample(images, min(val_size, len(images)))
+
+            # Move to validation directory
+            for img in val_images:
+                shutil.move(str(img), str(val_class_dir / img.name))
+
+            print(f"  {class_name}: {len(val_images)} validation, {len(images)-len(val_images)} training")
+
+        print("✓ Validation split created")
+
     def load_data(self, batch_size=32):
         """Load training and validation datasets."""
         print("\nLoading datasets...")
+
+        # Create validation split if needed
+        self._create_validation_split()
 
         train_dir = self.data_dir / 'train'
         val_dir = self.data_dir / 'validation'
@@ -210,8 +268,15 @@ class LandmarkClassifier:
 
         return history
 
-    def save_model(self, filename='landmark_model.pth', save_dir='ml_training/models'):
+    def save_model(self, filename='landmark_model.pth', save_dir=None):
         """Save the trained model."""
+        # Auto-detect models directory
+        if save_dir is None:
+            if Path('models').exists() or Path('.').resolve().name == 'ml_training':
+                save_dir = 'models'
+            else:
+                save_dir = 'ml_training/models'
+
         save_path = Path(save_dir)
         save_path.mkdir(parents=True, exist_ok=True)
 
@@ -248,7 +313,13 @@ def main():
     class_to_idx = classifier.load_data(batch_size=BATCH_SIZE)
 
     # Save class mapping for later use
-    mapping_file = Path('ml_training/data/pytorch_class_mapping.json')
+    # Auto-detect path
+    if Path('data').exists():
+        mapping_file = Path('data/pytorch_class_mapping.json')
+    else:
+        mapping_file = Path('ml_training/data/pytorch_class_mapping.json')
+
+    mapping_file.parent.mkdir(parents=True, exist_ok=True)
     with open(mapping_file, 'w') as f:
         json.dump(class_to_idx, f, indent=2)
     print(f"✓ Saved class mapping to {mapping_file}")
@@ -264,7 +335,13 @@ def main():
     print(f"\n✓ Final model saved to {final_path}")
 
     # Save training history
-    history_file = Path('ml_training/models/training_history.json')
+    # Auto-detect path
+    if Path('models').exists() or Path('.').resolve().name == 'ml_training':
+        history_file = Path('models/training_history.json')
+    else:
+        history_file = Path('ml_training/models/training_history.json')
+
+    history_file.parent.mkdir(parents=True, exist_ok=True)
     with open(history_file, 'w') as f:
         json.dump(history, f, indent=2)
     print(f"✓ Training history saved to {history_file}")
