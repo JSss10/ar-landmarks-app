@@ -21,8 +21,11 @@ class VisionService: ObservableObject {
     private var lastProcessingTime: Date = .distantPast
     private let minimumInterval: TimeInterval = 0.5
     
+    // Maps ML model class names to Supabase landmark IDs
     private let classToLandmarkID: [String: String] = [
-        "opernhaus": "7506e475-2e94-4e46-a0b3-06fe6d9cc6ab",
+        "fraumunster": "c7642023-c860-4f5f-ba62-b9155d895bf3",
+        "grossmunster": "40e604d8-4179-4521-ae27-3e2918689db2",
+        "opera_house": "bc4b1e54-f6ab-470f-80e3-6be4c832f12f"
     ]
     
     init() {
@@ -30,18 +33,15 @@ class VisionService: ObservableObject {
     }
     
     private func loadModel() {
-        /*
         do {
             let config = MLModelConfiguration()
             let mlModel = try ZurichLandmarkClassifier(configuration: config).model
             model = try VNCoreMLModel(for: mlModel)
-            print("Vision Model geladen")
+            print("✓ Vision Model loaded successfully")
         } catch {
             self.error = "Model konnte nicht geladen werden: \(error.localizedDescription)"
+            print("⚠️ Vision Model loading failed: \(error.localizedDescription)")
         }
-        */
-        print("Vision Model: Warte auf trainiertes Create ML Model")
-        model = nil
     }
     
     /// Klassifiziert Bild und gibt erkannten Landmark zurück
@@ -75,8 +75,21 @@ class VisionService: ObservableObject {
                 }
                 
                 guard let results = request.results as? [VNClassificationObservation],
-                      let topResult = results.first,
-                      topResult.confidence > 0.75 else {
+                      let topResult = results.first else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                // Debug: Print top 3 predictions
+                let top3 = results.prefix(3)
+                print("🔍 Vision predictions:")
+                for (index, result) in top3.enumerated() {
+                    let percent = Int(result.confidence * 100)
+                    print("  \(index + 1). \(result.identifier): \(percent)%")
+                }
+
+                guard topResult.confidence > 0.75 else {
+                    print("⚠️ Top result below threshold: \(Int(topResult.confidence * 100))% < 75%")
                     Task { @MainActor in
                         self.recognizedLandmark = nil
                         self.confidence = 0
@@ -85,17 +98,20 @@ class VisionService: ObservableObject {
                     return
                 }
                 
+                let landmarkID = self.classToLandmarkID[topResult.identifier]
                 let result = RecognitionResult(
                     identifier: topResult.identifier,
                     confidence: topResult.confidence,
-                    landmarkID: self.classToLandmarkID[topResult.identifier]
+                    landmarkID: landmarkID
                 )
-                
+
+                print("✅ Recognized: \(topResult.identifier) (\(Int(topResult.confidence * 100))%) -> ID: \(landmarkID ?? "NOT_MAPPED")")
+
                 Task { @MainActor in
                     self.recognizedLandmark = topResult.identifier
                     self.confidence = topResult.confidence
                 }
-                
+
                 continuation.resume(returning: result)
             }
             
@@ -119,12 +135,23 @@ class VisionService: ObservableObject {
         return await withCheckedContinuation { continuation in
             let request = VNCoreMLRequest(model: model) { request, error in
                 guard let results = request.results as? [VNClassificationObservation],
-                      let topResult = results.first,
-                      topResult.confidence > 0.75 else {
+                      let topResult = results.first else {
                     continuation.resume(returning: nil)
                     return
                 }
-                
+
+                // Debug: Print predictions
+                print("🔍 Vision (UIImage) predictions:")
+                for (index, result) in results.prefix(3).enumerated() {
+                    print("  \(index + 1). \(result.identifier): \(Int(result.confidence * 100))%")
+                }
+
+                guard topResult.confidence > 0.75 else {
+                    print("⚠️ Below threshold: \(Int(topResult.confidence * 100))%")
+                    continuation.resume(returning: nil)
+                    return
+                }
+
                 let result = RecognitionResult(
                     identifier: topResult.identifier,
                     confidence: topResult.confidence,
