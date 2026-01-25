@@ -4,6 +4,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser-client";
 import { User } from "@supabase/supabase-js";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type AuthProps = {
   user: User | null;
@@ -15,7 +16,6 @@ export default function Auth({ user }: AuthProps) {
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState("");
   const supabase = getSupabaseBrowserClient();
   const [currentUser, setCurrentUser] = useState<User | null>(user);
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function Auth({ user }: AuthProps) {
   async function handleSignOut() {
     await supabase.auth.signOut();
     setCurrentUser(null);
-    setStatus("Signed out successfully");
+    toast.success("Signed out successfully");
   }
 
   useEffect(() => {
@@ -53,9 +53,9 @@ export default function Auth({ user }: AuthProps) {
         },
       });
       if (error) {
-        setStatus(error.message);
+        toast.error(error.message);
       } else {
-        setStatus("Check your inbox to confirm your account.");
+        toast.success("Check your inbox to confirm your account.");
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
@@ -63,9 +63,9 @@ export default function Auth({ user }: AuthProps) {
         password,
       });
       if (error) {
-        setStatus(error.message);
+        toast.error(error.message);
       } else {
-        setStatus("Signed in successfully");
+        toast.success("Signed in successfully");
         router.push("/dashboard");
       }
     }
@@ -210,12 +210,6 @@ export default function Auth({ user }: AuthProps) {
                 {mode === "signin" ? "Sign In" : "Create Account"}
               </button>
             </form>
-
-            {status && (
-              <div className="mt-4 rounded-2xl bg-blue-50/80 px-4 py-3 text-sm text-blue-900 dark:bg-blue-900/20 dark:text-blue-200">
-                {status}
-              </div>
-            )}
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">

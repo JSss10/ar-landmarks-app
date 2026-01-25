@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, FormEvent } from 'react'
+import { toast } from 'sonner'
 import Modal from './Modal'
 import { Landmark } from '@/lib/supabase/types'
 import { getSupabaseBrowserClient } from '@/lib/supabase/browser-client'
@@ -98,7 +99,6 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
   })
 
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<'basic' | 'content' | 'location' | 'hours' | 'photos'>('basic')
 
   useEffect(() => {
@@ -179,14 +179,12 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
         photo_2_caption: '',
       })
     }
-    setError('')
     setActiveTab('basic')
   }, [landmark, isOpen])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError('')
 
     try {
       if (!formData.name || !formData.latitude || !formData.longitude) {
@@ -259,10 +257,11 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
         if (insertError) throw insertError
       }
 
+      toast.success(isEditMode ? 'Landmark updated successfully' : 'Landmark created successfully')
       onSuccess()
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      toast.error(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -280,12 +279,6 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
       maxWidth="4xl"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 text-sm">
-            {error}
-          </div>
-        )}
-
         <div className="flex flex-wrap gap-2 pb-4 border-b border-slate-200/50 dark:border-slate-700/50">
           <button type="button" className={tabClass('basic')} onClick={() => setActiveTab('basic')}>Basic Info</button>
           <button type="button" className={tabClass('content')} onClick={() => setActiveTab('content')}>Content</button>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import Modal from './Modal'
 import { Landmark } from '@/lib/supabase/types'
 import { getSupabaseBrowserClient } from '@/lib/supabase/browser-client'
@@ -15,13 +16,11 @@ interface DeleteLandmarkModalProps {
 export default function DeleteLandmarkModal({ isOpen, onClose, onSuccess, landmark }: DeleteLandmarkModalProps) {
   const supabase = getSupabaseBrowserClient()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
   const handleDelete = async () => {
     if (!landmark) return
 
     setLoading(true)
-    setError('')
 
     try {
       const { error: deleteError } = await supabase
@@ -31,10 +30,11 @@ export default function DeleteLandmarkModal({ isOpen, onClose, onSuccess, landma
 
       if (deleteError) throw deleteError
 
+      toast.success('Landmark deleted successfully')
       onSuccess()
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete landmark')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete landmark')
     } finally {
       setLoading(false)
     }
@@ -50,12 +50,6 @@ export default function DeleteLandmarkModal({ isOpen, onClose, onSuccess, landma
       maxWidth="md"
     >
       <div className="space-y-4">
-        {error && (
-          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 text-sm">
-            {error}
-          </div>
-        )}
-
         <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
           <div className="flex items-start space-x-3">
             <div className="shrink-0">
