@@ -10,7 +10,7 @@ interface LandmarkModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
-  landmark?: Landmark | null
+  landmark: Landmark | null
 }
 
 function formatDateForDisplay(dateString: string | null | undefined): string {
@@ -59,7 +59,6 @@ function parseOpeningHours(hours: string | null | undefined): string {
 }
 
 export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: LandmarkModalProps) {
-  const isEditMode = !!landmark
   const supabase = getSupabaseBrowserClient()
 
   const [formData, setFormData] = useState({
@@ -142,42 +141,6 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
         photo_2_url: landmark.photo_2_url || '',
         photo_2_caption: landmark.photo_2_caption || '',
       })
-    } else {
-      setFormData({
-        name: '',
-        description: '',
-        title_teaser: '',
-        text_teaser: '',
-        detailed_information: '',
-        zurich_card_description: '',
-        zurich_card: false,
-        latitude: '',
-        longitude: '',
-        api_categories: '',
-        image_url: '',
-        image_caption: '',
-        price: '',
-        zurich_tourism_id: '',
-        is_active: true,
-        date_modified: '',
-        opens: '',
-        opening_hours: '',
-        special_opening_hours: '',
-        address_country: '',
-        street_address: '',
-        postal_code: '',
-        city: '',
-        phone: '',
-        email: '',
-        website_url: '',
-        place: '',
-        photo_0_url: '',
-        photo_0_caption: '',
-        photo_1_url: '',
-        photo_1_caption: '',
-        photo_2_url: '',
-        photo_2_caption: '',
-      })
     }
     setActiveTab('basic')
   }, [landmark, isOpen])
@@ -240,24 +203,19 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
         updated_at: new Date().toISOString(),
       }
 
-      if (isEditMode) {
-        const { error: updateError } = await supabase
-          .from('landmarks')
-          // @ts-ignore - Supabase client has no schema types
-          .update(landmarkData)
-          .eq('id', landmark.id)
-
-        if (updateError) throw updateError
-      } else {
-        const { error: insertError } = await supabase
-          .from('landmarks')
-          // @ts-ignore - Supabase client has no schema types
-          .insert([{ ...landmarkData, created_at: new Date().toISOString() }])
-
-        if (insertError) throw insertError
+      if (!landmark) {
+        throw new Error('No landmark selected for editing')
       }
 
-      toast.success(isEditMode ? 'Landmark updated successfully' : 'Landmark created successfully')
+      const { error: updateError } = await supabase
+        .from('landmarks')
+        // @ts-ignore - Supabase client has no schema types
+        .update(landmarkData)
+        .eq('id', landmark.id)
+
+      if (updateError) throw updateError
+
+      toast.success('Landmark updated successfully')
       onSuccess()
       onClose()
     } catch (err) {
@@ -267,29 +225,29 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
     }
   }
 
-  const inputClass = "w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all text-slate-900 dark:text-white"
-  const labelClass = "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-  const tabClass = (tab: string) => `px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === tab ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`
+  const inputClass = "w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-colors text-gray-900 placeholder:text-gray-400"
+  const labelClass = "block text-sm font-medium text-gray-700 mb-1.5"
+  const tabClass = (tab: string) => `px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${activeTab === tab ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditMode ? 'Edit Landmark' : 'Create New Landmark'}
+      title="Edit Landmark"
       maxWidth="4xl"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex flex-wrap gap-2 pb-4 border-b border-slate-200/50 dark:border-slate-700/50">
-          <button type="button" className={tabClass('basic')} onClick={() => setActiveTab('basic')}>Basic Info</button>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="flex flex-wrap gap-1.5 pb-4 border-b border-gray-100">
+          <button type="button" className={tabClass('basic')} onClick={() => setActiveTab('basic')}>Basic</button>
           <button type="button" className={tabClass('content')} onClick={() => setActiveTab('content')}>Content</button>
           <button type="button" className={tabClass('location')} onClick={() => setActiveTab('location')}>Location</button>
-          <button type="button" className={tabClass('hours')} onClick={() => setActiveTab('hours')}>Hours & Price</button>
+          <button type="button" className={tabClass('hours')} onClick={() => setActiveTab('hours')}>Hours</button>
           <button type="button" className={tabClass('photos')} onClick={() => setActiveTab('photos')}>Photos</button>
         </div>
 
         {activeTab === 'basic' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>
                   Name <span className="text-red-500">*</span>
@@ -305,13 +263,13 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
               </div>
 
               <div>
-                <label className={labelClass}>API Categories</label>
+                <label className={labelClass}>Categories</label>
                 <input
                   type="text"
                   value={formData.api_categories}
                   onChange={(e) => setFormData({ ...formData, api_categories: e.target.value })}
                   className={inputClass}
-                  placeholder="Culture, Museums, Art (comma-separated)"
+                  placeholder="Culture, Museums (comma-separated)"
                 />
               </div>
 
@@ -338,32 +296,26 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
               </div>
             </div>
 
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-6 pt-2">
+              <label className="flex items-center gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
-                  id="is_active"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20"
+                  className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
                 />
-                <label htmlFor="is_active" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Active
-                </label>
-              </div>
+                <span className="text-sm text-gray-700">Active</span>
+              </label>
 
-              <div className="flex items-center space-x-3">
+              <label className="flex items-center gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
-                  id="zurich_card"
                   checked={formData.zurich_card}
                   onChange={(e) => setFormData({ ...formData, zurich_card: e.target.checked })}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-2 focus:ring-blue-500/20"
+                  className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
                 />
-                <label htmlFor="zurich_card" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Zurich Card
-                </label>
-              </div>
+                <span className="text-sm text-gray-700">Zurich Card</span>
+              </label>
             </div>
 
             <div>
@@ -376,8 +328,8 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
                 placeholder="2025-11-05T16:13"
               />
               {formData.date_modified && (
-                <p className="text-xs text-slate-500 mt-1">
-                  Displayed as: {formatDateForDisplay(formData.date_modified)}
+                <p className="text-xs text-gray-500 mt-1.5">
+                  {formatDateForDisplay(formData.date_modified)}
                 </p>
               )}
             </div>
@@ -397,7 +349,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Title Teaser</label>
                 <input
@@ -422,7 +374,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
             </div>
 
             <div>
-              <label className={labelClass}>Detailed Information (Highlights)</label>
+              <label className={labelClass}>Highlights</label>
               <textarea
                 value={formData.detailed_information}
                 onChange={(e) => setFormData({ ...formData, detailed_information: e.target.value })}
@@ -430,7 +382,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
                 className={inputClass + " resize-none"}
                 placeholder="One highlight per line"
               />
-              <p className="text-xs text-slate-500 mt-1">Enter each highlight on a new line</p>
+              <p className="text-xs text-gray-500 mt-1.5">Enter each highlight on a new line</p>
             </div>
 
             <div>
@@ -440,7 +392,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
                 onChange={(e) => setFormData({ ...formData, zurich_card_description: e.target.value })}
                 rows={2}
                 className={inputClass + " resize-none"}
-                placeholder="Zurich Card benefits description"
+                placeholder="Zurich Card benefits"
               />
             </div>
           </div>
@@ -448,7 +400,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
 
         {activeTab === 'location' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>
                   Latitude <span className="text-red-500">*</span>
@@ -480,7 +432,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Street Address</label>
                 <input
@@ -526,7 +478,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className={labelClass}>Phone</label>
                 <input
@@ -550,7 +502,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
               </div>
 
               <div>
-                <label className={labelClass}>Website URL</label>
+                <label className={labelClass}>Website</label>
                 <input
                   type="url"
                   value={formData.website_url}
@@ -582,13 +534,13 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
                 value={formData.opening_hours}
                 onChange={(e) => setFormData({ ...formData, opening_hours: e.target.value })}
                 rows={4}
-                className={inputClass + " resize-none font-mono text-sm"}
+                className={inputClass + " resize-none font-mono text-xs"}
                 placeholder="Su,Mo,Tu,We,Th,Fr,Sa 08:00:00-16:50:00"
               />
               {formData.opening_hours && (
-                <div className="mt-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  <p className="text-xs text-slate-500 mb-1">Preview:</p>
-                  <pre className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500 mb-1">Preview</p>
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap">
                     {parseOpeningHours(formData.opening_hours)}
                   </pre>
                 </div>
@@ -596,7 +548,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
             </div>
 
             <div>
-              <label className={labelClass}>Special Opening Hours</label>
+              <label className={labelClass}>Special Hours</label>
               <textarea
                 value={formData.special_opening_hours}
                 onChange={(e) => setFormData({ ...formData, special_opening_hours: e.target.value })}
@@ -615,147 +567,130 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
                 className={inputClass + " resize-none"}
                 placeholder="e.g., CHF 15.- / Free entry"
               />
-              <p className="text-xs text-slate-500 mt-1">Will be cleaned up for display (trimmed, null removed)</p>
             </div>
           </div>
         )}
 
         {activeTab === 'photos' && (
-          <div className="space-y-6">
-            <div>
-              <label className={labelClass}>Main Image URL</label>
-              <input
-                type="url"
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                className={inputClass}
-                placeholder="https://..."
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Main Image Caption</label>
-              <input
-                type="text"
-                value={formData.image_caption}
-                onChange={(e) => setFormData({ ...formData, image_caption: e.target.value })}
-                className={inputClass}
-                placeholder="Image caption"
-              />
-            </div>
-
-            {formData.image_url && (
-              <div className="relative aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
-                <img
-                  src={formData.image_url}
-                  alt="Main image preview"
-                  className="w-full h-full object-cover"
-                  onError={(e) => (e.currentTarget.style.display = 'none')}
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <div>
+                <label className={labelClass}>Main Image URL</label>
+                <input
+                  type="url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  className={inputClass}
+                  placeholder="https://..."
                 />
               </div>
-            )}
 
-            <hr className="border-slate-200 dark:border-slate-700" />
+              <div>
+                <label className={labelClass}>Caption</label>
+                <input
+                  type="text"
+                  value={formData.image_caption}
+                  onChange={(e) => setFormData({ ...formData, image_caption: e.target.value })}
+                  className={inputClass}
+                  placeholder="Image caption"
+                />
+              </div>
 
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Photo Gallery</h3>
-
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-3">
-              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Photo 1</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-slate-500">URL</label>
-                  <input
-                    type="url"
-                    value={formData.photo_0_url}
-                    onChange={(e) => setFormData({ ...formData, photo_0_url: e.target.value })}
-                    className={inputClass}
-                    placeholder="https://..."
+              {formData.image_url && (
+                <div className="relative max-h-48 bg-gray-100 rounded-lg overflow-hidden">
+                  <img
+                    src={formData.image_url}
+                    alt="Main image preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => (e.currentTarget.style.display = 'none')}
                   />
                 </div>
-                <div>
-                  <label className="text-xs text-slate-500">Caption</label>
-                  <input
-                    type="text"
-                    value={formData.photo_0_caption}
-                    onChange={(e) => setFormData({ ...formData, photo_0_caption: e.target.value })}
-                    className={inputClass}
-                    placeholder="Caption"
-                  />
-                </div>
+              )}
+            </div>
+
+            <hr className="border-gray-100" />
+
+            <h3 className="text-sm font-semibold text-gray-900">Photo Gallery</h3>
+
+            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Photo 1</h4>
+              <div className="space-y-3">
+                <input
+                  type="url"
+                  value={formData.photo_0_url}
+                  onChange={(e) => setFormData({ ...formData, photo_0_url: e.target.value })}
+                  className={inputClass}
+                  placeholder="URL"
+                />
+                <input
+                  type="text"
+                  value={formData.photo_0_caption}
+                  onChange={(e) => setFormData({ ...formData, photo_0_caption: e.target.value })}
+                  className={inputClass}
+                  placeholder="Caption"
+                />
               </div>
               {formData.photo_0_url && (
                 <img
                   src={formData.photo_0_url}
-                  alt="Photo 1 preview"
-                  className="h-24 w-auto rounded-lg object-cover"
+                  alt="Photo 1"
+                  className="h-20 w-auto max-w-full rounded-lg object-cover"
                   onError={(e) => (e.currentTarget.style.display = 'none')}
                 />
               )}
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-3">
-              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Photo 2</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-slate-500">URL</label>
-                  <input
-                    type="url"
-                    value={formData.photo_1_url}
-                    onChange={(e) => setFormData({ ...formData, photo_1_url: e.target.value })}
-                    className={inputClass}
-                    placeholder="https://..."
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-500">Caption</label>
-                  <input
-                    type="text"
-                    value={formData.photo_1_caption}
-                    onChange={(e) => setFormData({ ...formData, photo_1_caption: e.target.value })}
-                    className={inputClass}
-                    placeholder="Caption"
-                  />
-                </div>
+            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Photo 2</h4>
+              <div className="space-y-3">
+                <input
+                  type="url"
+                  value={formData.photo_1_url}
+                  onChange={(e) => setFormData({ ...formData, photo_1_url: e.target.value })}
+                  className={inputClass}
+                  placeholder="URL"
+                />
+                <input
+                  type="text"
+                  value={formData.photo_1_caption}
+                  onChange={(e) => setFormData({ ...formData, photo_1_caption: e.target.value })}
+                  className={inputClass}
+                  placeholder="Caption"
+                />
               </div>
               {formData.photo_1_url && (
                 <img
                   src={formData.photo_1_url}
-                  alt="Photo 2 preview"
-                  className="h-24 w-auto rounded-lg object-cover"
+                  alt="Photo 2"
+                  className="h-20 w-auto max-w-full rounded-lg object-cover"
                   onError={(e) => (e.currentTarget.style.display = 'none')}
                 />
               )}
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-3">
-              <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Photo 3</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-slate-500">URL</label>
-                  <input
-                    type="url"
-                    value={formData.photo_2_url}
-                    onChange={(e) => setFormData({ ...formData, photo_2_url: e.target.value })}
-                    className={inputClass}
-                    placeholder="https://..."
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-500">Caption</label>
-                  <input
-                    type="text"
-                    value={formData.photo_2_caption}
-                    onChange={(e) => setFormData({ ...formData, photo_2_caption: e.target.value })}
-                    className={inputClass}
-                    placeholder="Caption"
-                  />
-                </div>
+            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Photo 3</h4>
+              <div className="space-y-3">
+                <input
+                  type="url"
+                  value={formData.photo_2_url}
+                  onChange={(e) => setFormData({ ...formData, photo_2_url: e.target.value })}
+                  className={inputClass}
+                  placeholder="URL"
+                />
+                <input
+                  type="text"
+                  value={formData.photo_2_caption}
+                  onChange={(e) => setFormData({ ...formData, photo_2_caption: e.target.value })}
+                  className={inputClass}
+                  placeholder="Caption"
+                />
               </div>
               {formData.photo_2_url && (
                 <img
                   src={formData.photo_2_url}
-                  alt="Photo 3 preview"
-                  className="h-24 w-auto rounded-lg object-cover"
+                  alt="Photo 3"
+                  className="h-20 w-auto max-w-full rounded-lg object-cover"
                   onError={(e) => (e.currentTarget.style.display = 'none')}
                 />
               )}
@@ -763,21 +698,21 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
           </div>
         )}
 
-        <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t border-gray-100">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
+            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
           >
-            {loading ? 'Saving...' : isEditMode ? 'Update Landmark' : 'Create Landmark'}
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </form>

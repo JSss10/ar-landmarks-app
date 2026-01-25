@@ -25,7 +25,6 @@ export default function Home() {
   const [landmarks, setLandmarks] = useState<Landmark[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedLandmark, setSelectedLandmark] = useState<Landmark | null>(null)
@@ -98,147 +97,142 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7]">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-red-500">Error: {error}</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7]">
+        <div className="text-base text-red-600 font-medium">Error: {error}</div>
       </div>
     )
   }
 
   return (
-    <main className="min-h-screen p-8 bg-gray-50">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Dashboard
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Manage landmarks for the AR prototype
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
+    <main className="min-h-screen bg-[#f5f5f7]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="mb-8 sm:mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
+                Landmarks
+              </h1>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">
+                Manage AR landmarks for Zurich
+              </p>
+            </div>
             <button
               onClick={handleSync}
               disabled={isSyncing}
-              className="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-medium transition-all shadow-lg shadow-purple-500/20 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSyncing ? (
                 <>
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   <span>Syncing...</span>
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  <span>Sync Zurich POIs</span>
+                  <span>Sync POIs</span>
                 </>
               )}
             </button>
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all shadow-lg shadow-blue-500/20 flex items-center space-x-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Create New Landmark</span>
-            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-2xl font-bold text-blue-600">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-8">
+          <div className="bg-white rounded-xl p-4 sm:p-5 border border-gray-200/60">
+            <div className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
               {landmarks.length}
             </div>
-            <div className="text-gray-600">Landmarks</div>
+            <div className="text-sm text-gray-500 mt-0.5">Total landmarks</div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-2xl font-bold text-purple-600">
+          <div className="bg-white rounded-xl p-4 sm:p-5 border border-gray-200/60">
+            <div className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
               {landmarks.filter(l => l.is_active).length}
             </div>
-            <div className="text-gray-600">Active entries</div>
+            <div className="text-sm text-gray-500 mt-0.5">Active</div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Landmarks</h2>
+        <div className="bg-white rounded-xl border border-gray-200/60 overflow-hidden">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-100">
+            <h2 className="text-base font-semibold text-gray-900">All Landmarks</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide hidden sm:table-cell">
                     Coordinates
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Modified
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide hidden md:table-cell">
+                    Modified
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-100">
                 {landmarks.map((landmark) => (
-                  <tr key={landmark.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">
+                  <tr key={landmark.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-4 sm:px-6 py-3.5">
+                      <div className="font-medium text-gray-900 text-sm">
                         {landmark.name_en || landmark.name}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {landmark.latitude.toFixed(4)}, {landmark.longitude.toFixed(4)}
+                    <td className="px-4 sm:px-6 py-3.5 hidden sm:table-cell">
+                      <span className="text-sm text-gray-500 font-mono">
+                        {landmark.latitude.toFixed(4)}, {landmark.longitude.toFixed(4)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDateEnglish(landmark.date_modified)}
+                    <td className="px-4 sm:px-6 py-3.5 hidden md:table-cell">
+                      <span className="text-sm text-gray-500">
+                        {formatDateEnglish(landmark.date_modified)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${landmark.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                    <td className="px-4 sm:px-6 py-3.5">
+                      <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-md ${landmark.is_active
+                        ? 'bg-green-50 text-green-700'
+                        : 'bg-gray-100 text-gray-600'
                         }`}>
                         {landmark.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
+                    <td className="px-4 sm:px-6 py-3.5">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleEdit(landmark)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Edit landmark"
+                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                          title="Edit"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
                           </svg>
                         </button>
                         <button
                           onClick={() => handleDelete(landmark)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete landmark"
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                          title="Delete"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                           </svg>
                         </button>
                       </div>
@@ -249,12 +243,6 @@ export default function Home() {
             </table>
           </div>
         </div>
-
-        <LandmarkModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onSuccess={handleSuccess}
-        />
 
         <LandmarkModal
           isOpen={isEditModalOpen}

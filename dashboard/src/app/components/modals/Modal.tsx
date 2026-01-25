@@ -44,29 +44,29 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'lg
   }[maxWidth]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className={`relative w-full ${maxWidthClass} animate-in fade-in zoom-in-95 duration-200`}>
-        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/10 border border-white/20 dark:border-slate-700/50 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+      <div className={`relative w-full ${maxWidthClass} max-h-[90vh] animate-in fade-in zoom-in-95 duration-200`}>
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-2 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 rounded-full"
+              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          <div className="px-6 py-4">
+          <div className="px-4 sm:px-6 py-4 overflow-y-auto flex-1">
             {children}
           </div>
         </div>
