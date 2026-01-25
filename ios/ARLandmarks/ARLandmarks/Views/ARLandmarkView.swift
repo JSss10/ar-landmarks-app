@@ -13,10 +13,8 @@ struct ARLandmarkView: View {
     @StateObject private var modeManager = ARModeManager()
     @State private var selectedLandmark: Landmark?
     @State private var showingDetail = false
-    @State private var landmarkPhotos: [LandmarkPhoto] = []
-    @State private var isLoadingPhotos = false
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
         ZStack {
             ARViewContainer(
@@ -25,19 +23,16 @@ struct ARLandmarkView: View {
                 modeManager: modeManager
             )
             .ignoresSafeArea()
-            
+
             VStack {
                 topBar
-                
+
                 Spacer()
-                
+
                 if let landmark = selectedLandmark ?? modeManager.recognizedLandmark {
                     landmarkInfoCard(landmark)
-                        .task(id: landmark.id) {
-                            await loadPhotos(for: landmark)
-                        }
                 }
-                
+
                 modeSwitcher
             }
             .padding()
@@ -58,9 +53,9 @@ struct ARLandmarkView: View {
             }
         }
     }
-    
+
     // MARK: - Computed Properties
-    
+
     private var displayedLandmarks: [Landmark] {
         switch modeManager.currentMode {
         case .visualRecognition:
@@ -72,9 +67,9 @@ struct ARLandmarkView: View {
             return modeManager.nearbyLandmarks
         }
     }
-    
+
     // MARK: - View Components
-    
+
     private var topBar: some View {
         HStack {
             HStack(spacing: 8) {
@@ -89,9 +84,9 @@ struct ARLandmarkView: View {
             .padding(.vertical, 8)
             .background(.ultraThinMaterial)
             .cornerRadius(20)
-                        
+
             Spacer()
-                        
+
             HStack(spacing: 4) {
                 Image(systemName: "mappin.and.ellipse")
                 Text("\(landmarks.count) Landmarks")
@@ -102,7 +97,7 @@ struct ARLandmarkView: View {
             .padding(.vertical, 8)
             .background(.ultraThinMaterial)
             .cornerRadius(20)
-                        
+
             if let weather = modeManager.weather {
                 HStack(spacing: 4) {
                 Text(weather.iconEmoji)
@@ -117,25 +112,11 @@ struct ARLandmarkView: View {
             }
         }
     }
-    
+
     private func landmarkInfoCard(_ landmark: Landmark) -> some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
-                if isLoadingPhotos {
-                    ZStack {
-                        Color.clear
-                        ProgressView()
-                    }
-                    .frame(height: 180)
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, 16)
-                } else if !landmarkPhotos.isEmpty {
-                    photoCarousel()
-                        .padding(.bottom, 16)
-                        .onTapGesture {
-                            showingDetail = true
-                        }
-                } else if let imageUrl = landmark.imageUrl, !imageUrl.isEmpty {
+                if let imageUrl = landmark.imageUrl, !imageUrl.isEmpty {
                     AsyncImage(url: URL(string: imageUrl)) { phase in
                         switch phase {
                         case .empty:
@@ -249,11 +230,11 @@ struct ARLandmarkView: View {
         .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: -5)
     }
 
-    private func photoCarousel() -> some View {
+    private func photoCarousel(photos: [(url: String, caption: String?)]) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                ForEach(landmarkPhotos) { photo in
-                    AsyncImage(url: URL(string: photo.photoUrl)) { phase in
+                ForEach(photos.indices, id: \.self) { index in
+                    AsyncImage(url: URL(string: photos[index].url)) { phase in
                         switch phase {
                         case .empty:
                             ProgressView()
@@ -299,7 +280,7 @@ struct ARLandmarkView: View {
     private func openWebsite(_ url: URL) {
         UIApplication.shared.open(url, options: [:])
     }
-    
+
     private var modeSwitcher: some View {
             HStack(spacing: 12) {
                 ForEach(ARModeManager.ARMode.allCases, id: \.self) { mode in
@@ -331,27 +312,15 @@ struct ARLandmarkView: View {
             .background(.ultraThinMaterial)
             .cornerRadius(24)
         }
-    
+
     // MARK: - Helpers
-    
+
     private func formatDistance(_ meters: Double) -> String {
         if meters < 1000 {
             return "\(Int(meters)) m"
         } else {
             return String(format: "%.1f km", meters / 1000)
         }
-    }
-
-    private func loadPhotos(for landmark: Landmark) async {
-        guard !isLoadingPhotos else { return }
-        isLoadingPhotos = true
-        do {
-            landmarkPhotos = try await SupabaseService.shared.fetchLandmarkPhotos(landmarkId: landmark.id)
-        } catch {
-            print("Failed to load photos: \(error)")
-            landmarkPhotos = []
-        }
-        isLoadingPhotos = false
     }
 
     private func decodeHTMLEntities(_ text: String) -> String {
@@ -405,6 +374,29 @@ struct ARLandmarkView: View {
 
         return result
     }
+
+    private func stripHTMLTags(_ text: String) -> String {
+        var result = text
+
+        let tagPattern = "<[^>]+>"
+        if let regex = try? NSRegularExpression(pattern: tagPattern, options: [.caseInsensitive]) {
+            result = regex.stringByReplacingMatches(
+                in: result,
+                range: NSRange(location: 0, length: result.utf16.count),
+                withTemplate: " "
+            )
+        }
+
+        result = decodeHTMLEntities(result)
+
+        while result.contains("  ") {
+            result = result.replacingOccurrences(of: "  ", with: " ")
+        }
+
+        result = result.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return result
+    }
 }
 
 // MARK: - Landmark Detail Sheet
@@ -412,26 +404,13 @@ struct ARLandmarkView: View {
 struct LandmarkDetailSheet: View {
     let landmark: Landmark
     let weather: Weather?
-    @State private var photos: [LandmarkPhoto] = []
-    @State private var isLoadingPhotos = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    if isLoadingPhotos {
-                        ZStack {
-                            Color.clear
-                            ProgressView()
-                        }
-                        .frame(height: 240)
-                        .frame(maxWidth: .infinity)
-                        .padding(.bottom, 24)
-                    } else if !photos.isEmpty {
-                        photoGallery
-                            .padding(.bottom, 24)
-                    } else if let imageUrl = landmark.imageUrl, !imageUrl.isEmpty {
+                    if let imageUrl = landmark.imageUrl, !imageUrl.isEmpty {
                         AsyncImage(url: URL(string: imageUrl)) { phase in
                             switch phase {
                             case .empty:
@@ -468,6 +447,18 @@ struct LandmarkDetailSheet: View {
                                             .foregroundColor(.secondary)
                                     }
                                 }
+
+                                if let apiCategories = landmark.apiCategories, !apiCategories.isEmpty {
+                                    ForEach(apiCategories.prefix(3), id: \.self) { cat in
+                                        Text(cat)
+                                            .font(.system(size: 12))
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(Color.blue.opacity(0.1))
+                                            .foregroundColor(.blue)
+                                            .cornerRadius(8)
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal, 20)
@@ -493,7 +484,22 @@ struct LandmarkDetailSheet: View {
                             .padding(.bottom, 32)
                         }
 
-                        if let hours = landmark.openingHours {
+                        if !landmark.photos.isEmpty {
+                            photoGallery
+                                .padding(.bottom, 32)
+                        }
+
+                        if let highlights = landmark.detailedInformation, !highlights.isEmpty {
+                            highlightsSection(highlights: highlights)
+                                .padding(.bottom, 32)
+                        }
+
+                        if let price = landmark.formattedPrice {
+                            priceSection(price: price)
+                                .padding(.bottom, 32)
+                        }
+
+                        if let hours = landmark.formattedOpeningHours {
                             openingHoursSection(hours: hours)
                                 .padding(.bottom, 32)
                         }
@@ -506,8 +512,67 @@ struct LandmarkDetailSheet: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .presentationDragIndicator(.visible)
-        .task {
-            await loadPhotos()
+    }
+
+    // MARK: - Highlights Section (Full Width)
+
+    private func highlightsSection(highlights: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Highlights")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(.primary)
+                .padding(.horizontal, 20)
+
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(highlights, id: \.self) { highlight in
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.yellow)
+                            .frame(width: 20)
+
+                        Text(highlight)
+                            .font(.system(size: 16))
+                            .foregroundColor(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity)
+            .background(Color(uiColor: .secondarySystemFill))
+            .cornerRadius(12)
+            .padding(.horizontal, 20)
+        }
+    }
+
+    // MARK: - Price Section
+
+    private func priceSection(price: String) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Admission")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(.primary)
+                .padding(.horizontal, 20)
+
+            HStack(alignment: .top, spacing: 16) {
+                Image(systemName: "banknote.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(.green)
+                    .frame(width: 24)
+
+                Text(stripHTMLTags(price))
+                    .font(.system(size: 16))
+                    .foregroundColor(.primary)
+
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(Color(uiColor: .secondarySystemFill))
+            .cornerRadius(12)
+            .padding(.horizontal, 20)
         }
     }
 
@@ -618,10 +683,38 @@ struct LandmarkDetailSheet: View {
                     Divider()
                         .padding(.leading, 52)
 
+                    let fullAddress = [
+                        address,
+                        landmark.postalCode,
+                        landmark.city
+                    ].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
+
                     detailRow(
                         icon: "mappin.circle.fill",
                         title: "Address",
-                        value: address
+                        value: fullAddress
+                    )
+                }
+
+                if let place = landmark.place, !place.isEmpty {
+                    Divider()
+                        .padding(.leading, 52)
+
+                    detailRow(
+                        icon: "building.2.fill",
+                        title: "Place",
+                        value: place
+                    )
+                }
+
+                if let dateModified = landmark.formattedDateModified {
+                    Divider()
+                        .padding(.leading, 52)
+
+                    detailRow(
+                        icon: "calendar",
+                        title: "Last Updated",
+                        value: dateModified
                     )
                 }
             }
@@ -634,8 +727,9 @@ struct LandmarkDetailSheet: View {
     private var photoGallery: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 16) {
-                ForEach(photos) { photo in
-                    AsyncImage(url: URL(string: photo.photoUrl)) { phase in
+                ForEach(landmark.photos.indices, id: \.self) { index in
+                    let photo = landmark.photos[index]
+                    AsyncImage(url: URL(string: photo.url)) { phase in
                         switch phase {
                         case .empty:
                             ProgressView()
@@ -683,7 +777,7 @@ struct LandmarkDetailSheet: View {
                         .foregroundColor(.blue)
                         .frame(width: 24)
 
-                    Text(formatOpeningHours(hours))
+                    Text(stripHTMLTags(hours))
                         .font(.system(size: 16))
                         .foregroundColor(.primary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -697,21 +791,6 @@ struct LandmarkDetailSheet: View {
             .cornerRadius(12)
             .padding(.horizontal, 20)
         }
-    }
-
-    private func loadPhotos() async {
-        isLoadingPhotos = true
-        do {
-            photos = try await SupabaseService.shared.fetchLandmarkPhotos(landmarkId: landmark.id)
-        } catch {
-            print("Failed to load photos: \(error)")
-        }
-        isLoadingPhotos = false
-    }
-
-    private func formatOpeningHours(_ hours: String) -> String {
-        hours.replacingOccurrences(of: ";", with: "\n")
-            .replacingOccurrences(of: "|", with: "\n")
     }
 
     private func decodeHTMLEntities(_ text: String) -> String {
@@ -762,6 +841,29 @@ struct LandmarkDetailSheet: View {
                 }
             }
         }
+
+        return result
+    }
+
+    private func stripHTMLTags(_ text: String) -> String {
+        var result = text
+
+        let tagPattern = "<[^>]+>"
+        if let regex = try? NSRegularExpression(pattern: tagPattern, options: [.caseInsensitive]) {
+            result = regex.stringByReplacingMatches(
+                in: result,
+                range: NSRange(location: 0, length: result.utf16.count),
+                withTemplate: " "
+            )
+        }
+
+        result = decodeHTMLEntities(result)
+
+        while result.contains("  ") {
+            result = result.replacingOccurrences(of: "  ", with: " ")
+        }
+
+        result = result.trimmingCharacters(in: .whitespacesAndNewlines)
 
         return result
     }

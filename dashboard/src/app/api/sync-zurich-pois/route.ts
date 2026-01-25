@@ -26,6 +26,18 @@ function extractCategory(categoryObj: Record<string, any> | null): string | null
   return categories.length > 0 ? categories[0] : null;
 }
 
+function extractCategories(categoryObj: Record<string, any> | null): string[] {
+  if (!categoryObj) return [];
+  return Object.keys(categoryObj);
+}
+
+function formatPrice(price: string | null | undefined): string | null {
+  if (!price) return null;
+  const trimmed = price.trim();
+  if (!trimmed || trimmed.toLowerCase() === 'null') return null;
+  return trimmed;
+}
+
 async function findOrCreateCategory(categoryName: string): Promise<string | null> {
   if (!categoryName) return null;
 
@@ -92,35 +104,69 @@ async function linkLandmarkCategory(landmarkId: string, categoryId: string): Pro
 
 function transformPOI(poi: any) {
   const nameEn = poi.name?.en || poi.name?.de || 'Unknown';
-  const descriptionEn = stripHtml(poi.description?.en) || stripHtml(poi.disambiguatingDescription?.en);
-  const primaryImage = poi.image?.url || (poi.photo && poi.photo[0]?.url) || null;
+  const disambiguatingDescription = stripHtml(poi.disambiguatingDescription?.en);
+  const descriptionEn = stripHtml(poi.description?.en);
+  const titleTeaser = poi.titleTeaser?.en || null;
+  const textTeaser = poi.textTeaser?.en || null;
+  const detailedInformation = Array.isArray(poi.detailedInformation?.en) ? poi.detailedInformation.en : null;
+  const zurichCardDescription = poi.zurichCardDescription || null;
+  const zurichCard = typeof poi.zurichCard === 'boolean' ? poi.zurichCard : null;
+
+  const primaryImage = poi.image?.url || null;
+  const imageCaption = poi.image?.caption?.en || null;
+  const price = formatPrice(poi.price?.en);
+
   const address = poi.address || {};
   const coords = poi.geoCoordinates || {};
   const categoryName = extractCategory(poi.category);
+  const apiCategories = extractCategories(poi.category);
+
+  const photos = poi.photo || [];
 
   return {
     name: nameEn,
     name_en: nameEn,
-    description: descriptionEn,
+    disambiguating_description: disambiguatingDescription,
+    description: descriptionEn || disambiguatingDescription,
     description_en: descriptionEn,
+    title_teaser: titleTeaser,
+    text_teaser: textTeaser,
+    detailed_information: detailedInformation,
+    zurich_card_description: zurichCardDescription,
+    zurich_card: zurichCard,
     latitude: coords.latitude || 47.3769,
     longitude: coords.longitude || 8.5417,
     altitude: 408,
-    street_address: address.streetAddress,
-    postal_code: address.postalCode,
-    city: address.addressLocality || 'Zürich',
-    phone: address.telephone,
-    email: address.email,
-    website_url: address.url,
+    api_categories: apiCategories.length > 0 ? apiCategories : null,
     image_url: primaryImage,
+    image_caption: imageCaption,
+    price: price,
+    date_modified: poi.dateModified || null,
+    opens: poi.opens || null,
+    opening_hours: poi.openingHours || null,
+    opening_hours_specification: poi.openingHoursSpecification || null,
+    special_opening_hours: poi.specialOpeningHoursSpecification?.en || null,
+    address_country: address.addressCountry || null,
+    street_address: address.streetAddress || null,
+    postal_code: address.postalCode || null,
+    city: address.addressLocality || 'Zürich',
+    phone: address.telephone || null,
+    email: address.email || null,
+    website_url: address.url || null,
+    place: Array.isArray(poi.place) && poi.place.length > 0 ? poi.place[0] : null,
+    photo_0_url: photos[0]?.url || null,
+    photo_0_caption: photos[0]?.caption?.en || null,
+    photo_1_url: photos[1]?.url || null,
+    photo_1_caption: photos[1]?.caption?.en || null,
+    photo_2_url: photos[2]?.url || null,
+    photo_2_caption: photos[2]?.caption?.en || null,
     zurich_tourism_id: poi.identifier,
     api_source: 'zurich_tourism',
     api_raw_data: poi,
     last_synced_at: new Date().toISOString(),
     is_active: true,
     category_name: categoryName,
-    opening_hours: poi.openingHours,
-    photos: poi.photo || []
+    photos: photos
   };
 }
 

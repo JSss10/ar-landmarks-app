@@ -6,6 +6,20 @@ import { Landmark, Category } from '@/lib/supabase/types'
 import LandmarkModal from '@/app/components/modals/LandmarkModal'
 import DeleteLandmarkModal from '@/app/components/modals/DeleteLandmarkModal'
 
+function formatDateEnglish(dateString: string | null | undefined): string {
+  if (!dateString) return '-'
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  } catch {
+    return dateString
+  }
+}
+
 export default function Home() {
   const [landmarks, setLandmarks] = useState<Landmark[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -234,7 +248,7 @@ export default function Home() {
                     Coordinates
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Year built
+                    Last Modified
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -270,6 +284,9 @@ export default function Home() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {landmark.latitude.toFixed(4)}, {landmark.longitude.toFixed(4)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDateEnglish(landmark.date_modified)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs rounded-full ${landmark.is_active
