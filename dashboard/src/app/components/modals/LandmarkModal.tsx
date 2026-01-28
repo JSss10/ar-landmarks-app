@@ -58,6 +58,88 @@ function parseOpeningHours(hours: string | null | undefined): string {
   return hours
 }
 
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
+  return (
+    <label className="inline-flex items-center gap-3 cursor-pointer group">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-6.5 w-11.5 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 ${checked ? 'bg-green-500' : 'bg-gray-200'
+          }`}
+      >
+        <span
+          className={`pointer-events-none inline-block h-5.5 w-5.5 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-200 ease-in-out ${checked ? 'translate-x-5.5' : 'translate-x-0.5'
+            }`}
+        />
+      </button>
+      <span className="text-[15px] text-gray-700 group-hover:text-gray-900 transition-colors">{label}</span>
+    </label>
+  )
+}
+
+function SectionCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`bg-gray-50/80 rounded-xl p-4 space-y-4 ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+function PhotoCard({
+  index,
+  url,
+  caption,
+  onUrlChange,
+  onCaptionChange,
+  inputClass
+}: {
+  index: number
+  url: string
+  caption: string
+  onUrlChange: (value: string) => void
+  onCaptionChange: (value: string) => void
+  inputClass: string
+}) {
+  return (
+    <div className="bg-gray-50/80 rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] font-semibold text-gray-500 uppercase tracking-wide">Photo {index}</span>
+        {url && (
+          <span className="text-[11px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium">Added</span>
+        )}
+      </div>
+      <div className="space-y-3">
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => onUrlChange(e.target.value)}
+          className={inputClass}
+          placeholder="Image URL"
+        />
+        <input
+          type="text"
+          value={caption}
+          onChange={(e) => onCaptionChange(e.target.value)}
+          className={inputClass}
+          placeholder="Caption"
+        />
+      </div>
+      {url && (
+        <div className="pt-1">
+          <img
+            src={url}
+            alt={`Photo ${index}`}
+            className="h-24 w-auto max-w-full rounded-lg object-cover shadow-sm"
+            onError={(e) => (e.currentTarget.style.display = 'none')}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: LandmarkModalProps) {
   const supabase = getSupabaseBrowserClient()
 
@@ -225,9 +307,16 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
     }
   }
 
-  const inputClass = "w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-colors text-gray-900 placeholder:text-gray-400"
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1.5"
-  const tabClass = (tab: string) => `px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${activeTab === tab ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`
+  const inputClass = "w-full px-3.5 py-2.5 text-[15px] rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 text-gray-900 placeholder:text-gray-400"
+  const labelClass = "block text-[13px] font-medium text-gray-500 mb-1.5"
+
+  const tabs = [
+    { id: 'basic', label: 'Basic' },
+    { id: 'content', label: 'Content' },
+    { id: 'location', label: 'Location' },
+    { id: 'hours', label: 'Hours' },
+    { id: 'photos', label: 'Photos' },
+  ] as const
 
   return (
     <Modal
@@ -236,483 +325,470 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
       title="Edit Landmark"
       maxWidth="4xl"
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="flex flex-wrap gap-1.5 pb-4 border-b border-gray-100">
-          <button type="button" className={tabClass('basic')} onClick={() => setActiveTab('basic')}>Basic</button>
-          <button type="button" className={tabClass('content')} onClick={() => setActiveTab('content')}>Content</button>
-          <button type="button" className={tabClass('location')} onClick={() => setActiveTab('location')}>Location</button>
-          <button type="button" className={tabClass('hours')} onClick={() => setActiveTab('hours')}>Hours</button>
-          <button type="button" className={tabClass('photos')} onClick={() => setActiveTab('photos')}>Photos</button>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex justify-center pb-2">
+          <div className="inline-flex bg-gray-100 rounded-xl p-1 gap-0.5">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 text-[13px] font-semibold rounded-lg transition-all duration-200 ${activeTab === tab.id
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {activeTab === 'basic' && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>
-                  Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className={inputClass}
-                  placeholder="Landmark name"
-                />
-              </div>
+          <div className="space-y-5">
+            <SectionCard>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>
+                    Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className={inputClass}
+                    placeholder="Landmark name"
+                  />
+                </div>
 
-              <div>
-                <label className={labelClass}>Categories</label>
-                <input
-                  type="text"
-                  value={formData.api_categories}
-                  onChange={(e) => setFormData({ ...formData, api_categories: e.target.value })}
-                  className={inputClass}
-                  placeholder="Culture, Museums (comma-separated)"
-                />
-              </div>
+                <div>
+                  <label className={labelClass}>Categories</label>
+                  <input
+                    type="text"
+                    value={formData.api_categories}
+                    onChange={(e) => setFormData({ ...formData, api_categories: e.target.value })}
+                    className={inputClass}
+                    placeholder="Culture, Museums (comma-separated)"
+                  />
+                </div>
 
-              <div>
-                <label className={labelClass}>Zurich Tourism ID</label>
-                <input
-                  type="text"
-                  value={formData.zurich_tourism_id}
-                  onChange={(e) => setFormData({ ...formData, zurich_tourism_id: e.target.value })}
-                  className={inputClass}
-                  placeholder="ID"
-                />
-              </div>
+                <div>
+                  <label className={labelClass}>Zurich Tourism ID</label>
+                  <input
+                    type="text"
+                    value={formData.zurich_tourism_id}
+                    onChange={(e) => setFormData({ ...formData, zurich_tourism_id: e.target.value })}
+                    className={inputClass}
+                    placeholder="ID"
+                  />
+                </div>
 
-              <div>
-                <label className={labelClass}>Place</label>
-                <input
-                  type="text"
-                  value={formData.place}
-                  onChange={(e) => setFormData({ ...formData, place: e.target.value })}
-                  className={inputClass}
-                  placeholder="e.g., Outdoors"
-                />
+                <div>
+                  <label className={labelClass}>Place</label>
+                  <input
+                    type="text"
+                    value={formData.place}
+                    onChange={(e) => setFormData({ ...formData, place: e.target.value })}
+                    className={inputClass}
+                    placeholder="e.g., Outdoors, Indoors"
+                  />
+                </div>
               </div>
-            </div>
+            </SectionCard>
 
-            <div className="flex items-center gap-6 pt-2">
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
+            <SectionCard>
+              <div className="flex flex-wrap items-center gap-6">
+                <Toggle
                   checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
+                  onChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                  label="Active"
                 />
-                <span className="text-sm text-gray-700">Active</span>
-              </label>
-
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
+                <Toggle
                   checked={formData.zurich_card}
-                  onChange={(e) => setFormData({ ...formData, zurich_card: e.target.checked })}
-                  className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
+                  onChange={(checked) => setFormData({ ...formData, zurich_card: checked })}
+                  label="Zurich Card"
                 />
-                <span className="text-sm text-gray-700">Zurich Card</span>
-              </label>
-            </div>
+              </div>
+            </SectionCard>
 
-            <div>
-              <label className={labelClass}>Date Modified</label>
-              <input
-                type="text"
-                value={formData.date_modified}
-                onChange={(e) => setFormData({ ...formData, date_modified: e.target.value })}
-                className={inputClass}
-                placeholder="2025-11-05T16:13"
-              />
-              {formData.date_modified && (
-                <p className="text-xs text-gray-500 mt-1.5">
-                  {formatDateForDisplay(formData.date_modified)}
-                </p>
-              )}
-            </div>
+            <SectionCard>
+              <div>
+                <label className={labelClass}>Date Modified</label>
+                <input
+                  type="text"
+                  value={formData.date_modified}
+                  onChange={(e) => setFormData({ ...formData, date_modified: e.target.value })}
+                  className={inputClass}
+                  placeholder="2025-11-05T16:13"
+                />
+                {formData.date_modified && (
+                  <p className="text-[13px] text-gray-500 mt-2">
+                    {formatDateForDisplay(formData.date_modified)}
+                  </p>
+                )}
+              </div>
+            </SectionCard>
           </div>
         )}
 
         {activeTab === 'content' && (
-          <div className="space-y-4">
-            <div>
-              <label className={labelClass}>Description</label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-                className={inputClass + " resize-none"}
-                placeholder="Full description"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-5">
+            <SectionCard>
               <div>
-                <label className={labelClass}>Title Teaser</label>
-                <input
-                  type="text"
-                  value={formData.title_teaser}
-                  onChange={(e) => setFormData({ ...formData, title_teaser: e.target.value })}
-                  className={inputClass}
-                  placeholder="Teaser title"
+                <label className={labelClass}>Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={4}
+                  className={inputClass + " resize-none"}
+                  placeholder="Full description of the landmark"
                 />
               </div>
+            </SectionCard>
 
+            <SectionCard>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Title Teaser</label>
+                  <input
+                    type="text"
+                    value={formData.title_teaser}
+                    onChange={(e) => setFormData({ ...formData, title_teaser: e.target.value })}
+                    className={inputClass}
+                    placeholder="Short teaser title"
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Text Teaser</label>
+                  <input
+                    type="text"
+                    value={formData.text_teaser}
+                    onChange={(e) => setFormData({ ...formData, text_teaser: e.target.value })}
+                    className={inputClass}
+                    placeholder="Short teaser text"
+                  />
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard>
               <div>
-                <label className={labelClass}>Text Teaser</label>
-                <input
-                  type="text"
-                  value={formData.text_teaser}
-                  onChange={(e) => setFormData({ ...formData, text_teaser: e.target.value })}
-                  className={inputClass}
-                  placeholder="Teaser text"
+                <label className={labelClass}>Highlights</label>
+                <textarea
+                  value={formData.detailed_information}
+                  onChange={(e) => setFormData({ ...formData, detailed_information: e.target.value })}
+                  rows={4}
+                  className={inputClass + " resize-none"}
+                  placeholder="One highlight per line"
+                />
+                <p className="text-[12px] text-gray-400 mt-2">Enter each highlight on a new line</p>
+              </div>
+            </SectionCard>
+
+            <SectionCard>
+              <div>
+                <label className={labelClass}>Zurich Card Description</label>
+                <textarea
+                  value={formData.zurich_card_description}
+                  onChange={(e) => setFormData({ ...formData, zurich_card_description: e.target.value })}
+                  rows={2}
+                  className={inputClass + " resize-none"}
+                  placeholder="Benefits for Zurich Card holders"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>Highlights</label>
-              <textarea
-                value={formData.detailed_information}
-                onChange={(e) => setFormData({ ...formData, detailed_information: e.target.value })}
-                rows={4}
-                className={inputClass + " resize-none"}
-                placeholder="One highlight per line"
-              />
-              <p className="text-xs text-gray-500 mt-1.5">Enter each highlight on a new line</p>
-            </div>
-
-            <div>
-              <label className={labelClass}>Zurich Card Description</label>
-              <textarea
-                value={formData.zurich_card_description}
-                onChange={(e) => setFormData({ ...formData, zurich_card_description: e.target.value })}
-                rows={2}
-                className={inputClass + " resize-none"}
-                placeholder="Zurich Card benefits"
-              />
-            </div>
+            </SectionCard>
           </div>
         )}
 
         {activeTab === 'location' && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>
-                  Latitude <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  value={formData.latitude}
-                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                  className={inputClass}
-                  placeholder="47.3704"
-                />
-              </div>
+          <div className="space-y-5">
+            <SectionCard>
+              <h3 className="text-[13px] font-semibold text-gray-700 uppercase tracking-wide">Coordinates</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>
+                    Latitude <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    value={formData.latitude}
+                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                    className={inputClass}
+                    placeholder="47.3704"
+                  />
+                </div>
 
-              <div>
-                <label className={labelClass}>
-                  Longitude <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  value={formData.longitude}
-                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                  className={inputClass}
-                  placeholder="8.5441"
-                />
+                <div>
+                  <label className={labelClass}>
+                    Longitude <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    value={formData.longitude}
+                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                    className={inputClass}
+                    placeholder="8.5441"
+                  />
+                </div>
               </div>
-            </div>
+            </SectionCard>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>Street Address</label>
-                <input
-                  type="text"
-                  value={formData.street_address}
-                  onChange={(e) => setFormData({ ...formData, street_address: e.target.value })}
-                  className={inputClass}
-                  placeholder="Hardturmstrasse 8"
-                />
-              </div>
+            <SectionCard>
+              <h3 className="text-[13px] font-semibold text-gray-700 uppercase tracking-wide">Address</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Street Address</label>
+                  <input
+                    type="text"
+                    value={formData.street_address}
+                    onChange={(e) => setFormData({ ...formData, street_address: e.target.value })}
+                    className={inputClass}
+                    placeholder="Hardturmstrasse 8"
+                  />
+                </div>
 
-              <div>
-                <label className={labelClass}>Postal Code</label>
-                <input
-                  type="text"
-                  value={formData.postal_code}
-                  onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
-                  className={inputClass}
-                  placeholder="8005"
-                />
-              </div>
+                <div>
+                  <label className={labelClass}>Postal Code</label>
+                  <input
+                    type="text"
+                    value={formData.postal_code}
+                    onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
+                    className={inputClass}
+                    placeholder="8005"
+                  />
+                </div>
 
-              <div>
-                <label className={labelClass}>City</label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className={inputClass}
-                  placeholder="Zurich"
-                />
-              </div>
+                <div>
+                  <label className={labelClass}>City</label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    className={inputClass}
+                    placeholder="Zurich"
+                  />
+                </div>
 
-              <div>
-                <label className={labelClass}>Country</label>
-                <input
-                  type="text"
-                  value={formData.address_country}
-                  onChange={(e) => setFormData({ ...formData, address_country: e.target.value })}
-                  className={inputClass}
-                  placeholder="CH"
-                />
+                <div>
+                  <label className={labelClass}>Country</label>
+                  <input
+                    type="text"
+                    value={formData.address_country}
+                    onChange={(e) => setFormData({ ...formData, address_country: e.target.value })}
+                    className={inputClass}
+                    placeholder="CH"
+                  />
+                </div>
               </div>
-            </div>
+            </SectionCard>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className={labelClass}>Phone</label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className={inputClass}
-                  placeholder="+41 44 123 45 67"
-                />
-              </div>
+            <SectionCard>
+              <h3 className="text-[13px] font-semibold text-gray-700 uppercase tracking-wide">Contact</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className={labelClass}>Phone</label>
+                  <input
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className={inputClass}
+                    placeholder="+41 44 123 45 67"
+                  />
+                </div>
 
-              <div>
-                <label className={labelClass}>Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className={inputClass}
-                  placeholder="info@example.com"
-                />
-              </div>
+                <div>
+                  <label className={labelClass}>Email</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className={inputClass}
+                    placeholder="info@example.com"
+                  />
+                </div>
 
-              <div>
-                <label className={labelClass}>Website</label>
-                <input
-                  type="url"
-                  value={formData.website_url}
-                  onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
-                  className={inputClass}
-                  placeholder="https://..."
-                />
+                <div>
+                  <label className={labelClass}>Website</label>
+                  <input
+                    type="url"
+                    value={formData.website_url}
+                    onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                    className={inputClass}
+                    placeholder="https://..."
+                  />
+                </div>
               </div>
-            </div>
+            </SectionCard>
           </div>
         )}
 
         {activeTab === 'hours' && (
-          <div className="space-y-4">
-            <div>
-              <label className={labelClass}>Opens</label>
-              <input
-                type="text"
-                value={formData.opens}
-                onChange={(e) => setFormData({ ...formData, opens: e.target.value })}
-                className={inputClass}
-                placeholder="e.g., 09:00"
-              />
-            </div>
+          <div className="space-y-5">
+            <SectionCard>
+              <div>
+                <label className={labelClass}>Opens</label>
+                <input
+                  type="text"
+                  value={formData.opens}
+                  onChange={(e) => setFormData({ ...formData, opens: e.target.value })}
+                  className={inputClass}
+                  placeholder="Monday, Tuesday, Wednesday..."
+                />
+              </div>
+            </SectionCard>
 
-            <div>
-              <label className={labelClass}>Opening Hours</label>
-              <textarea
-                value={formData.opening_hours}
-                onChange={(e) => setFormData({ ...formData, opening_hours: e.target.value })}
-                rows={4}
-                className={inputClass + " resize-none font-mono text-xs"}
-                placeholder="Su,Mo,Tu,We,Th,Fr,Sa 08:00:00-16:50:00"
-              />
-              {formData.opening_hours && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-xs text-gray-500 mb-1">Preview</p>
-                  <pre className="text-xs text-gray-700 whitespace-pre-wrap">
-                    {parseOpeningHours(formData.opening_hours)}
-                  </pre>
-                </div>
-              )}
-            </div>
+            <SectionCard>
+              <div>
+                <label className={labelClass}>Opening Hours</label>
+                <textarea
+                  value={formData.opening_hours}
+                  onChange={(e) => setFormData({ ...formData, opening_hours: e.target.value })}
+                  rows={3}
+                  className={inputClass + " resize-none font-mono text-[13px]"}
+                  placeholder='["Mo,Tu,We,Th,Fr,Sa 10:00:00-18:00:00","Su 12:30:00-18:00:00"]'
+                />
+                {formData.opening_hours && (
+                  <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Preview</p>
+                    <pre className="text-[13px] text-gray-700 whitespace-pre-wrap font-sans">
+                      {parseOpeningHours(formData.opening_hours)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </SectionCard>
 
-            <div>
-              <label className={labelClass}>Special Hours</label>
-              <textarea
-                value={formData.special_opening_hours}
-                onChange={(e) => setFormData({ ...formData, special_opening_hours: e.target.value })}
-                rows={2}
-                className={inputClass + " resize-none"}
-                placeholder="e.g., Open around the clock"
-              />
-            </div>
+            <SectionCard>
+              <div>
+                <label className={labelClass}>Special Hours</label>
+                <textarea
+                  value={formData.special_opening_hours}
+                  onChange={(e) => setFormData({ ...formData, special_opening_hours: e.target.value })}
+                  rows={3}
+                  className={inputClass + " resize-none"}
+                  placeholder="Holiday hours, seasonal changes, etc."
+                />
+              </div>
+            </SectionCard>
 
-            <div>
-              <label className={labelClass}>Price</label>
-              <textarea
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                rows={2}
-                className={inputClass + " resize-none"}
-                placeholder="e.g., CHF 15.- / Free entry"
-              />
-            </div>
+            <SectionCard>
+              <div>
+                <label className={labelClass}>Price</label>
+                <textarea
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  rows={3}
+                  className={inputClass + " resize-none"}
+                  placeholder="Admission prices and details"
+                />
+              </div>
+            </SectionCard>
           </div>
         )}
 
         {activeTab === 'photos' && (
           <div className="space-y-5">
-            <div className="space-y-3">
-              <div>
-                <label className={labelClass}>Main Image URL</label>
-                <input
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className={inputClass}
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>Caption</label>
-                <input
-                  type="text"
-                  value={formData.image_caption}
-                  onChange={(e) => setFormData({ ...formData, image_caption: e.target.value })}
-                  className={inputClass}
-                  placeholder="Image caption"
-                />
-              </div>
-
-              {formData.image_url && (
-                <div className="relative max-h-48 bg-gray-100 rounded-lg overflow-hidden">
-                  <img
-                    src={formData.image_url}
-                    alt="Main image preview"
-                    className="w-full h-full object-cover"
-                    onError={(e) => (e.currentTarget.style.display = 'none')}
+            <SectionCard>
+              <h3 className="text-[13px] font-semibold text-gray-700 uppercase tracking-wide">Main Image</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className={labelClass}>Image URL</label>
+                  <input
+                    type="url"
+                    value={formData.image_url}
+                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                    className={inputClass}
+                    placeholder="https://..."
                   />
                 </div>
-              )}
-            </div>
 
-            <hr className="border-gray-100" />
+                <div>
+                  <label className={labelClass}>Caption</label>
+                  <input
+                    type="text"
+                    value={formData.image_caption}
+                    onChange={(e) => setFormData({ ...formData, image_caption: e.target.value })}
+                    className={inputClass}
+                    placeholder="Image caption"
+                  />
+                </div>
 
-            <h3 className="text-sm font-semibold text-gray-900">Photo Gallery</h3>
+                {formData.image_url && (
+                  <div className="relative h-48 bg-gray-100 rounded-xl overflow-hidden">
+                    <img
+                      src={formData.image_url}
+                      alt="Main image preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  </div>
+                )}
+              </div>
+            </SectionCard>
 
-            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Photo 1</h4>
-              <div className="space-y-3">
-                <input
-                  type="url"
-                  value={formData.photo_0_url}
-                  onChange={(e) => setFormData({ ...formData, photo_0_url: e.target.value })}
-                  className={inputClass}
-                  placeholder="URL"
+            <div className="pt-2">
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-4">Photo Gallery</h3>
+              <div className="space-y-4">
+                <PhotoCard
+                  index={1}
+                  url={formData.photo_0_url}
+                  caption={formData.photo_0_caption}
+                  onUrlChange={(value) => setFormData({ ...formData, photo_0_url: value })}
+                  onCaptionChange={(value) => setFormData({ ...formData, photo_0_caption: value })}
+                  inputClass={inputClass}
                 />
-                <input
-                  type="text"
-                  value={formData.photo_0_caption}
-                  onChange={(e) => setFormData({ ...formData, photo_0_caption: e.target.value })}
-                  className={inputClass}
-                  placeholder="Caption"
+                <PhotoCard
+                  index={2}
+                  url={formData.photo_1_url}
+                  caption={formData.photo_1_caption}
+                  onUrlChange={(value) => setFormData({ ...formData, photo_1_url: value })}
+                  onCaptionChange={(value) => setFormData({ ...formData, photo_1_caption: value })}
+                  inputClass={inputClass}
+                />
+                <PhotoCard
+                  index={3}
+                  url={formData.photo_2_url}
+                  caption={formData.photo_2_caption}
+                  onUrlChange={(value) => setFormData({ ...formData, photo_2_url: value })}
+                  onCaptionChange={(value) => setFormData({ ...formData, photo_2_caption: value })}
+                  inputClass={inputClass}
                 />
               </div>
-              {formData.photo_0_url && (
-                <img
-                  src={formData.photo_0_url}
-                  alt="Photo 1"
-                  className="h-20 w-auto max-w-full rounded-lg object-cover"
-                  onError={(e) => (e.currentTarget.style.display = 'none')}
-                />
-              )}
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Photo 2</h4>
-              <div className="space-y-3">
-                <input
-                  type="url"
-                  value={formData.photo_1_url}
-                  onChange={(e) => setFormData({ ...formData, photo_1_url: e.target.value })}
-                  className={inputClass}
-                  placeholder="URL"
-                />
-                <input
-                  type="text"
-                  value={formData.photo_1_caption}
-                  onChange={(e) => setFormData({ ...formData, photo_1_caption: e.target.value })}
-                  className={inputClass}
-                  placeholder="Caption"
-                />
-              </div>
-              {formData.photo_1_url && (
-                <img
-                  src={formData.photo_1_url}
-                  alt="Photo 2"
-                  className="h-20 w-auto max-w-full rounded-lg object-cover"
-                  onError={(e) => (e.currentTarget.style.display = 'none')}
-                />
-              )}
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Photo 3</h4>
-              <div className="space-y-3">
-                <input
-                  type="url"
-                  value={formData.photo_2_url}
-                  onChange={(e) => setFormData({ ...formData, photo_2_url: e.target.value })}
-                  className={inputClass}
-                  placeholder="URL"
-                />
-                <input
-                  type="text"
-                  value={formData.photo_2_caption}
-                  onChange={(e) => setFormData({ ...formData, photo_2_caption: e.target.value })}
-                  className={inputClass}
-                  placeholder="Caption"
-                />
-              </div>
-              {formData.photo_2_url && (
-                <img
-                  src={formData.photo_2_url}
-                  alt="Photo 3"
-                  className="h-20 w-auto max-w-full rounded-lg object-cover"
-                  onError={(e) => (e.currentTarget.style.display = 'none')}
-                />
-              )}
             </div>
           </div>
         )}
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t border-gray-100">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-5 border-t border-gray-200/60">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 text-[15px] font-medium text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 disabled:opacity-50 active:scale-[0.98]"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 text-[15px] font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-xl transition-all duration-200 disabled:opacity-50 shadow-sm active:scale-[0.98]"
           >
-            {loading ? 'Saving...' : 'Save Changes'}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Saving...
+              </span>
+            ) : (
+              'Save Changes'
+            )}
           </button>
         </div>
       </form>
