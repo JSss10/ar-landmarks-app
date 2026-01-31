@@ -112,136 +112,134 @@ struct ARLandmarkView: View {
     }
 
     private func landmarkInfoCard(_ landmark: Landmark) -> some View {
-        VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 0) {
-                if let imageUrl = landmark.imageUrl, !imageUrl.isEmpty {
-                    AsyncImage(url: URL(string: imageUrl)) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(height: 180)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(height: 180)
-                                .clipped()
-                        case .failure:
-                            EmptyView()
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-                    .padding(.bottom, 16)
-                    .onTapGesture {
-                        showingDetail = true
-                    }
-                }
-
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 0) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(landmark.name)
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.primary)
-
-                        HStack(spacing: 4) {
-                            if let category = landmark.category {
-                                Text(category.name)
-                                    .font(.system(size: 15))
-                                    .foregroundColor(.secondary)
+                    if let imageUrl = landmark.imageUrl, !imageUrl.isEmpty {
+                        AsyncImage(url: URL(string: imageUrl)) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(height: 180)
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: 180)
+                                    .clipped()
+                            case .failure:
+                                EmptyView()
+                            @unknown default:
+                                EmptyView()
                             }
                         }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        showingDetail = true
-                    }
-
-                    HStack(spacing: 12) {
-                        Button {
-                            openDirections(to: landmark)
-                        } label: {
-                            VStack(spacing: 4) {
-                                Image(systemName: "figure.walk.circle.fill")
-                                    .font(.system(size: 24))
-                                Text("Directions")
-                                    .font(.system(size: 12, weight: .medium))
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                        }
-
-                        if landmark.phone != nil {
-                            Button {
-                                if let phone = landmark.phone {
-                                    callPhone(phone)
-                                }
-                            } label: {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "phone.circle.fill")
-                                        .font(.system(size: 24))
-                                    Text("Call")
-                                        .font(.system(size: 12, weight: .medium))
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color(uiColor: .secondarySystemFill))
-                                .foregroundColor(.blue)
-                                .cornerRadius(12)
-                            }
-                        }
-
-                        if landmark.websiteUrl != nil {
-                            Button {
-                                if let urlString = landmark.websiteUrl,
-                                   let url = URL(string: urlString) {
-                                    openWebsite(url)
-                                }
-                            } label: {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "safari.fill")
-                                        .font(.system(size: 24))
-                                    Text("Website")
-                                        .font(.system(size: 12, weight: .medium))
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color(uiColor: .secondarySystemFill))
-                                .foregroundColor(.blue)
-                                .cornerRadius(12)
-                            }
-                        }
-
-                        Button {
+                        .padding(.bottom, 16)
+                        .onTapGesture {
                             showingDetail = true
-                        } label: {
-                            VStack(spacing: 4) {
-                                Image(systemName: "info.circle.fill")
-                                    .font(.system(size: 24))
-                                Text("Info")
-                                    .font(.system(size: 12, weight: .medium))
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color(uiColor: .secondarySystemFill))
-                            .foregroundColor(.blue)
-                            .cornerRadius(12)
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 24)
+
+                    VStack(alignment: .leading, spacing: 0) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(landmark.name)
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(.primary)
+
+                            HStack(spacing: 4) {
+                                if let category = landmark.category {
+                                    Text(category.name)
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 20)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            showingDetail = true
+                        }
+
+                        HStack(spacing: 12) {
+                            Button {
+                                openDirections(to: landmark)
+                            } label: {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "figure.walk.circle.fill")
+                                        .font(.system(size: 24))
+                                    Text("Directions")
+                                        .font(.system(size: 12, weight: .medium))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                            }
+
+                            if landmark.phone != nil {
+                                Button {
+                                    if let phone = landmark.phone {
+                                        callPhone(phone)
+                                    }
+                                } label: {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "phone.circle.fill")
+                                            .font(.system(size: 24))
+                                        Text("Call")
+                                            .font(.system(size: 12, weight: .medium))
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(Color(uiColor: .secondarySystemFill))
+                                    .foregroundColor(.blue)
+                                    .cornerRadius(12)
+                                }
+                            }
+
+                            if landmark.websiteUrl != nil {
+                                Button {
+                                    if let urlString = landmark.websiteUrl,
+                                       let url = URL(string: urlString) {
+                                        openWebsite(url)
+                                    }
+                                } label: {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "safari.fill")
+                                            .font(.system(size: 24))
+                                        Text("Website")
+                                            .font(.system(size: 12, weight: .medium))
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(Color(uiColor: .secondarySystemFill))
+                                    .foregroundColor(.blue)
+                                    .cornerRadius(12)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 24)
+                    }
                 }
+                .padding(.bottom, 8)
             }
-            .padding(.bottom, 8)
+            .background(.regularMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: -5)
+
+            Button {
+                showingDetail = true
+            } label: {
+                Image(systemName: "info.circle.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .environment(\.colorScheme, .dark)
+            }
+            .padding(12)
         }
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: -5)
     }
 
     private func photoCarousel(photos: [(url: String, caption: String?)]) -> some View {
