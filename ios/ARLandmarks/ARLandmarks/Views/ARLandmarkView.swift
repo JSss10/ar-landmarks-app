@@ -72,18 +72,16 @@ struct ARLandmarkView: View {
 
     private var topBar: some View {
         HStack {
-            HStack(spacing: 8) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.backward")
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .fontWeight(.medium)
                     .foregroundStyle(.white)
-                }
+                    .frame(width: 44, height: 44)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .environment(\.colorScheme, .dark)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(.ultraThinMaterial)
-            .cornerRadius(20)
 
             Spacer()
 
@@ -93,22 +91,22 @@ struct ARLandmarkView: View {
             }
             .font(.subheadline)
             .fontWeight(.medium)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .frame(height: 44)
             .background(.ultraThinMaterial)
-            .cornerRadius(20)
+            .cornerRadius(22)
 
             if let weather = modeManager.weather {
                 HStack(spacing: 4) {
-                Text(weather.iconEmoji)
-                Text(weather.temperatureFormatted)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    Text(weather.iconEmoji)
+                    Text(weather.temperatureFormatted)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .frame(height: 44)
                 .background(.ultraThinMaterial)
-                .cornerRadius(20)
+                .cornerRadius(22)
             }
         }
     }
