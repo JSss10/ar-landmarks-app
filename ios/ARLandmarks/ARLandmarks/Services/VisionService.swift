@@ -35,16 +35,16 @@ class VisionService: ObservableObject {
             let config = MLModelConfiguration()
             let mlModel = try ZurichLandmarkClassifier(configuration: config).model
             model = try VNCoreMLModel(for: mlModel)
-            print("Vision Model geladen")
+            print("Vision Model loaded")
         } catch {
-            self.error = "Model konnte nicht geladen werden: \(error.localizedDescription)"
+            self.error = "Model could not be loaded: \(error.localizedDescription)"
         }
         */
-        print("Vision Model: Warte auf trainiertes Create ML Model")
+        print("Vision Model: Waiting for trained Create ML Model")
         model = nil
     }
     
-    /// Klassifiziert Bild und gibt erkannten Landmark zurück
+    /// Classifies image and returns recognized landmark
     func classifyImage(_ pixelBuffer: CVPixelBuffer) async -> RecognitionResult? {
         guard Date().timeIntervalSince(lastProcessingTime) >= minimumInterval else {
             return nil
@@ -52,7 +52,7 @@ class VisionService: ObservableObject {
         lastProcessingTime = Date()
         
         guard let model = model else {
-            // Kein Model geladen - Fallback
+            // No model loaded - Fallback
             return nil
         }
         
@@ -110,7 +110,7 @@ class VisionService: ObservableObject {
         }
     }
     
-    /// Klassifiziert UIImage
+    /// Classifies UIImage
     func classifyImage(_ image: UIImage) async -> RecognitionResult? {
         guard let cgImage = image.cgImage else { return nil }
         

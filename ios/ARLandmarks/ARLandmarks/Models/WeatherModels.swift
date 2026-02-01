@@ -84,11 +84,11 @@ enum WeatherError: Error, LocalizedError, Sendable {
     
     var errorDescription: String? {
         switch self {
-        case .invalidURL: return "Ungültige URL"
-        case .networkError(let message): return "Netzwerkfehler: \(message)"
-        case .invalidResponse: return "Ungültige Antwort vom Server"
-        case .decodingError(let message): return "Dekodierungsfehler: \(message)"
-        case .missingAPIKey: return "OpenWeather API Key fehlt"
+        case .invalidURL: return "Invalid URL"
+        case .networkError(let message): return "Network error: \(message)"
+        case .invalidResponse: return "Invalid response from server"
+        case .decodingError(let message): return "Decoding error: \(message)"
+        case .missingAPIKey: return "OpenWeather API Key is missing"
         }
     }
 }

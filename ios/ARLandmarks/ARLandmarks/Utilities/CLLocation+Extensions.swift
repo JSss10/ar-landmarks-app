@@ -10,8 +10,8 @@ import CoreLocation
 // MARK: - CLLocation Extension
 
 extension CLLocation {
-    /// - Parameter destination: Ziel-Location
-    /// - Returns: Bearing in Grad (0-360, 0 = Nord)
+    /// - Parameter destination: Target location
+    /// - Returns: Bearing in degrees (0-360, 0 = North)
     func bearing(to destination: CLLocation) -> Double {
         let lat1 = self.coordinate.latitude.toRadians
         let lon1 = self.coordinate.longitude.toRadians

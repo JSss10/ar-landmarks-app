@@ -143,9 +143,9 @@ private func loadModel() {
         let config = MLModelConfiguration()
         let mlModel = try ZurichLandmarkClassifier(configuration: config).model
         model = try VNCoreMLModel(for: mlModel)
-        print("Vision Model geladen")
+        print("Vision Model loaded")
     } catch {
-        self.error = "Model konnte nicht geladen werden: \(error.localizedDescription)"
+        self.error = "Model could not be loaded: \(error.localizedDescription)"
     }
 }
 ```

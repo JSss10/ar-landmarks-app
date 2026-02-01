@@ -10,7 +10,7 @@ import simd
 
 struct ARPositionCalculator {
     
-    /// Berechnet AR-Position relativ zum Benutzer
+    /// Calculates AR position relative to user
     static func calculatePosition(
         for landmark: Landmark,
         userLocation: CLLocation,
@@ -21,19 +21,19 @@ struct ARPositionCalculator {
             longitude: landmark.longitude
         )
         
-        // Distanz in Metern
+        // Distance in meters
         let distance = userLocation.distance(from: landmarkLocation)
         
-        // Bearing zum Landmark (0° = Nord)
+        // Bearing to landmark (0° = North)
         let bearing = userLocation.bearing(to: landmarkLocation)
         
-        // Relative Richtung (berücksichtigt wohin User schaut)
+        // Relative direction (accounts for user heading)
         let relativeBearing = (bearing - userHeading).toRadians
         
-        // Komprimiert echte Distanzen auf AR-Distanzen
+        // Compresses real distances to AR distances
         let arDistance = scaleDistanceForAR(distance)
         
-        // AR-Koordinaten
+        // AR coordinates
         let x = Float(arDistance * sin(relativeBearing))
         let z = Float(-arDistance * cos(relativeBearing))
         
@@ -44,21 +44,21 @@ struct ARPositionCalculator {
         return SIMD3<Float>(x, y, z)
     }
     
-    /// Skaliert echte Distanz auf AR-Distanz
+    /// Scales real distance to AR distance
     private static func scaleDistanceForAR(_ meters: Double) -> Double {
         if meters < 100 {
-            // Nah (0-100m): 2-3m in AR
+            // Close (0-100m): 2-3m in AR
             return 2.0 + (meters / 100.0) * 1.0
         } else if meters < 500 {
-            // Mittel (100-500m): 3-4.5m in AR
+            // Medium (100-500m): 3-4.5m in AR
             return 3.0 + ((meters - 100) / 400.0) * 1.5
         } else {
-            // Weit (500m+): 4.5-6m in AR (max 6m)
+            // Far (500m+): 4.5-6m in AR (max 6m)
             return 4.5 + min((meters - 500) / 1500.0 * 1.5, 1.5)
         }
     }
     
-    /// Berechnet ob ein Landmark im Sichtfeld ist
+    /// Calculates whether a landmark is in field of view
     static func isInFieldOfView(
         landmark: Landmark,
         userLocation: CLLocation,
