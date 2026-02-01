@@ -53,14 +53,14 @@ def update_vision_service(swift_mapping_code):
     if '/*' in new_content and 'ZurichLandmarkClassifier' in new_content:
         # Find and uncomment the loadModel function
         new_content = re.sub(
-            r'/\*\s*do \{.*?Model: Warte auf trainiertes Create ML Model"\)\s*\*/',
+            r'/\*\s*do \{.*?Model: Waiting for trained Create ML Model"\)\s*\*/',
             '''do {
             let config = MLModelConfiguration()
             let mlModel = try ZurichLandmarkClassifier(configuration: config).model
             model = try VNCoreMLModel(for: mlModel)
-            print("Vision Model geladen")
+            print("Vision Model loaded")
         } catch {
-            self.error = "Model konnte nicht geladen werden: \\(error.localizedDescription)"
+            self.error = "Model could not be loaded: \\(error.localizedDescription)"
             print("Vision Model: \\(error.localizedDescription)")
         }''',
             new_content,
@@ -107,7 +107,7 @@ def main():
     print("\nNext steps:")
     print("  1. Build your Xcode project")
     print("  2. Run the app and test landmark recognition")
-    print("  3. Monitor the console for 'Vision Model geladen' message")
+    print("  3. Monitor the console for 'Vision Model loaded' message")
     print("="*60)
 
 

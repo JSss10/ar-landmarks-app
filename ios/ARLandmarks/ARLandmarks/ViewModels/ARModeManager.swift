@@ -15,8 +15,8 @@ class ARModeManager: ObservableObject {
     // MARK: - AR Mode
     
     enum ARMode: String, CaseIterable {
-        case visualRecognition = "Visuelle Erkennung"
-        case geoBased = "Geo-basierte POIs"
+        case visualRecognition = "Visual Recognition"
+        case geoBased = "Geo-based POIs"
         
         var icon: String {
             switch self {
@@ -28,9 +28,9 @@ class ARModeManager: ObservableObject {
         var description: String {
             switch self {
             case .visualRecognition:
-                return "Richte die Kamera auf eine Sehenswürdigkeit"
+                return "Point the camera at a landmark"
             case .geoBased:
-                return "Zeigt umliegende POIs basierend auf GPS"
+                return "Shows nearby POIs based on GPS"
             }
         }
     }
@@ -42,7 +42,7 @@ class ARModeManager: ObservableObject {
     @Published var nearbyLandmarks: [Landmark] = []
     @Published var weather: Weather?
     @Published var isLoading: Bool = false
-    @Published var statusMessage: String = "Bereit"
+    @Published var statusMessage: String = "Ready"
     
     // MARK: - Services
     
@@ -52,10 +52,10 @@ class ARModeManager: ObservableObject {
     
     // MARK: - Settings
     
-    /// Maximale Distanz für Geo-POIs in Metern
+    /// Maximum distance for Geo-POIs in meters
     let maxPOIDistance: Double = 2000
     
-    /// Zeit ohne Erkennung bevor Fallback aktiviert wird
+    /// Time without recognition before fallback is activated
     let recognitionTimeout: TimeInterval = 5.0
     
     private var lastRecognitionTime: Date = Date()
@@ -98,7 +98,7 @@ class ARModeManager: ObservableObject {
         if let landmarkID = result.landmarkID,
            let landmark = landmarks.first(where: { $0.id == landmarkID }) {
             recognizedLandmark = landmark
-            statusMessage = "\(landmark.name) erkannt (\(result.confidencePercent)%)"
+            statusMessage = "\(landmark.name) recognized (\(result.confidencePercent)%)"
         }
     }
     
@@ -114,14 +114,14 @@ class ARModeManager: ObservableObject {
     func switchToGeoMode() {
         currentMode = .geoBased
         recognizedLandmark = nil
-        statusMessage = "Geo-Modus aktiv"
+        statusMessage = "Geo-Mode active"
         updateNearbyLandmarks()
     }
     
     func switchToVisualMode() {
         currentMode = .visualRecognition
         lastRecognitionTime = Date()
-        statusMessage = "Suche Sehenswürdigkeiten..."
+        statusMessage = "Searching for landmarks..."
     }
     
     func updateNearbyLandmarks(allLandmarks: [Landmark] = []) {
@@ -142,7 +142,7 @@ class ARModeManager: ObservableObject {
             }
     }
     
-    /// Aktuelle Wetterdaten
+    /// Current weather data
     func fetchWeather() {
         Task {
             do {
