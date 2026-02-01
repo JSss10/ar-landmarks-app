@@ -37,9 +37,10 @@ class VisionService: ObservableObject {
             let config = MLModelConfiguration()
             let mlModel = try ZurichLandmarkClassifier(configuration: config).model
             model = try VNCoreMLModel(for: mlModel)
-            print("Vision Model loaded")
+            print("✓ Vision Model loaded successfully")
         } catch {
             self.error = "Model could not be loaded: \(error.localizedDescription)"
+            print("⚠️ Vision Model loading failed: \(error.localizedDescription)")
         }
     }
     

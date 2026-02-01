@@ -44,6 +44,7 @@ struct ARViewContainer: UIViewRepresentable {
     }
 
     func updateUIView(_ arView: ARView, context: Context) {
+        context.coordinator.parent = self
         context.coordinator.landmarks = landmarks
 
         if context.coordinator.lastMode != currentMode {
