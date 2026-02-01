@@ -20,7 +20,8 @@ struct ARLandmarkView: View {
             ARViewContainer(
                 landmarks: landmarks,
                 selectedLandmark: $selectedLandmark,
-                modeManager: modeManager
+                modeManager: modeManager,
+                currentMode: modeManager.currentMode
             )
             .ignoresSafeArea()
 

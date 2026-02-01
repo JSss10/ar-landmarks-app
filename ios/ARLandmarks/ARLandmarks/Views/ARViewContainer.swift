@@ -14,6 +14,7 @@ struct ARViewContainer: UIViewRepresentable {
     let landmarks: [Landmark]
     @Binding var selectedLandmark: Landmark?
     let modeManager: ARModeManager
+    let currentMode: ARModeManager.ARMode
 
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
@@ -41,6 +42,11 @@ struct ARViewContainer: UIViewRepresentable {
 
     func updateUIView(_ arView: ARView, context: Context) {
         context.coordinator.landmarks = landmarks
+
+        if context.coordinator.lastMode != currentMode {
+            context.coordinator.lastMode = currentMode
+            context.coordinator.updatePOIs()
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -62,6 +68,7 @@ struct ARViewContainer: UIViewRepresentable {
         var arView: ARView?
         var landmarks: [Landmark] = []
         var placedLandmarkIds: Set<String> = []
+        var lastMode: ARModeManager.ARMode?
 
         private let locationManager = CLLocationManager()
         private var currentLocation: CLLocation?
@@ -116,10 +123,15 @@ struct ARViewContainer: UIViewRepresentable {
 
         // MARK: - POI Management
 
-        private func updatePOIs() {
+        func updatePOIs() {
             guard let arView = arView,
                   let userLocation = currentLocation else {
                 print("Location unavailable")
+                return
+            }
+
+            if parent.modeManager.currentMode == .visualRecognition {
+                cleanupAllPOIs()
                 return
             }
 
