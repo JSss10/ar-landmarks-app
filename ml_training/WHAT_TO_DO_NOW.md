@@ -1,13 +1,10 @@
-# What To Do Now - Image Collection Failed
+# What To Do Now - Image Collection
 
-## 🚨 The Problem
+## 📋 Status
 
-The automated image download from Wikimedia Commons failed with **403 Forbidden errors**. This means:
-- ✗ No training images were downloaded
-- ✗ Cannot train model without images
-- ✗ Need to collect images manually
+Training images need to be collected manually. The model requires images to learn landmark recognition.
 
-## ✅ The Solution
+## ✅ Options
 
 You have **3 options** to proceed:
 
@@ -312,7 +309,6 @@ Once you've collected images and trained:
 ### Quick Links:
 - Unsplash: https://unsplash.com/
 - Pexels: https://pexels.com/
-- Wikimedia Commons: https://commons.wikimedia.org/
 
 ---
 

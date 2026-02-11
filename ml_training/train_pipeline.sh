@@ -34,58 +34,52 @@ fi
 
 # Step 1: Fetch landmarks
 echo "=========================================="
-echo "Step 1/6: Fetching landmarks from Supabase"
+echo "Step 1/5: Fetching landmarks from Supabase"
 echo "=========================================="
 python ml_training/scripts/fetch_landmarks.py
 echo ""
 
-# Step 2: Download images
+# Check for training images
 echo "=========================================="
-echo "Step 2/6: Downloading training images"
+echo "IMPORTANT: Training Images Required"
 echo "=========================================="
-python ml_training/scripts/download_images.py
+echo "Please ensure you have placed training images in ml_training/data/train/"
+echo ""
+echo "Requirements:"
+echo "  1. 20-50 images per landmark in ml_training/data/train/<landmark_name>/"
+echo "  2. Diverse angles, lighting, and conditions"
+echo "  3. Good quality (min 300x300px)"
+echo ""
+echo "See MANUAL_IMAGE_COLLECTION.md for detailed instructions."
+echo ""
+read -p "Press ENTER when your images are ready (or Ctrl+C to exit)..."
 echo ""
 
-# Prompt user to add more images
+# Step 2: Train model
 echo "=========================================="
-echo "IMPORTANT: Review and Add More Images"
-echo "=========================================="
-echo "The automated download may not have enough images for optimal accuracy."
-echo ""
-echo "Recommended actions:"
-echo "  1. Review images in ml_training/data/train/"
-echo "  2. Add 20-50 high-quality images per landmark"
-echo "  3. Ensure diverse angles, lighting, and conditions"
-echo "  4. Remove any incorrect or low-quality images"
-echo ""
-read -p "Press ENTER when you're ready to continue with training (or Ctrl+C to exit)..."
-echo ""
-
-# Step 3: Train model
-echo "=========================================="
-echo "Step 3/6: Training the model"
+echo "Step 2/5: Training the model"
 echo "=========================================="
 echo "This will take 30-60 minutes..."
 python ml_training/scripts/train_model.py
 echo ""
 
-# Step 4: Convert to Core ML
+# Step 3: Convert to Core ML
 echo "=========================================="
-echo "Step 4/6: Converting to Core ML format"
+echo "Step 3/5: Converting to Core ML format"
 echo "=========================================="
 python ml_training/scripts/convert_to_coreml.py
 echo ""
 
-# Step 5: Copy to Xcode
+# Step 4: Copy to Xcode
 echo "=========================================="
-echo "Step 5/6: Copying model to Xcode project"
+echo "Step 4/5: Copying model to Xcode project"
 echo "=========================================="
 ./ml_training/scripts/copy_model_to_xcode.sh
 echo ""
 
-# Step 6: Update VisionService
+# Step 5: Update VisionService
 echo "=========================================="
-echo "Step 6/6: Updating VisionService.swift"
+echo "Step 5/5: Updating VisionService.swift"
 echo "=========================================="
 python ml_training/scripts/update_vision_service.py
 echo ""

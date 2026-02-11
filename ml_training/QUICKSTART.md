@@ -36,12 +36,11 @@ Run the complete pipeline:
 
 This will:
 1. ✓ Fetch landmarks from your database
-2. ✓ Download training images automatically
-3. ⏸️  Pause for you to add more images (recommended!)
-4. ✓ Train the model (~30-60 minutes)
-5. ✓ Convert to Core ML format
-6. ✓ Copy to Xcode project
-7. ✓ Update VisionService.swift
+2. ⏸️  Pause for you to place training images
+3. ✓ Train the model (~30-60 minutes)
+4. ✓ Convert to Core ML format
+5. ✓ Copy to Xcode project
+6. ✓ Update VisionService.swift
 
 ## Manual Steps (If Needed)
 
@@ -51,21 +50,20 @@ This will:
 # 1. Fetch landmarks
 python scripts/fetch_landmarks.py
 
-# 2. Download images
-python scripts/download_images.py
+# 2. Collect images manually (20-50 per landmark)
+#    Place in ml_training/data/train/<landmark_name>/
+#    See MANUAL_IMAGE_COLLECTION.md for details
 
-# 3. Add more images to ml_training/data/train/ (recommended!)
-
-# 4. Train model
+# 3. Train model
 python scripts/train_model.py
 
-# 5. Convert to Core ML
+# 4. Convert to Core ML
 python scripts/convert_to_coreml.py
 
-# 6. Copy to Xcode
+# 5. Copy to Xcode
 ./scripts/copy_model_to_xcode.sh
 
-# 7. Update VisionService
+# 6. Update VisionService
 python scripts/update_vision_service.py
 ```
 
@@ -80,15 +78,15 @@ python scripts/update_vision_service.py
 ## Tips for Better Accuracy
 
 ### Add More Images
-The automated download gets ~15 images per landmark. For better accuracy:
+For better accuracy, collect diverse images:
 
 1. Navigate to `ml_training/data/train/`
-2. For each landmark folder, add 20-50 more images
+2. For each landmark folder, add 20-50 images
 3. Get images from:
    - Google Images
-   - Wikimedia Commons
-   - Your own photos
    - Flickr Creative Commons
+   - Unsplash / Pexels
+   - Your own photos (best results!)
 
 ### Image Quality
 - ✓ Different angles

@@ -2,13 +2,8 @@
 
 ## Why Manual Collection?
 
-The automated image download from Wikimedia Commons may fail due to:
-- API rate limiting
-- 403 Forbidden errors
-- Insufficient images available
-- Wrong landmark matches
+Manual image collection gives you the best training results:
 
-**Manual collection ensures:**
 - ✅ High-quality, relevant images
 - ✅ Diverse angles and conditions
 - ✅ Better model accuracy
@@ -146,32 +141,6 @@ Collect **20-50 images per landmark** for optimal accuracy.
 - ✅ Good lighting (not too dark/bright)
 - ✅ Minimal obstructions (people, cars OK)
 - ❌ Avoid extreme blur, dark, or overexposed images
-
----
-
-## Method 5: Wikimedia Commons (Manual Download)
-
-If automated script fails, download manually:
-
-### Steps:
-
-1. **Visit Wikimedia Commons**
-   ```
-   https://commons.wikimedia.org/
-   ```
-
-2. **Search for landmark**
-   - Search: "Grossmünster"
-   - Or: "Category:Grossmünster"
-
-3. **Browse image gallery**
-
-4. **Download images**
-   - Click on image
-   - Click "More details"
-   - Right-click on image → Save As
-
-5. **Save to training folder**
 
 ---
 

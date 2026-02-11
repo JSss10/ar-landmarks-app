@@ -60,21 +60,23 @@ python scripts/fetch_landmarks.py
 - `data/landmarks.json` - All landmark data
 - `data/class_mapping.json` - Class names to landmark IDs
 
-### Step 2: Download Training Images
+### Step 2: Collect Training Images
 
-Downloads training images from Wikimedia Commons for each landmark.
+Collect training images manually for each landmark (20-50 images per landmark).
 
-```bash
-python scripts/download_images.py
-```
+See `MANUAL_IMAGE_COLLECTION.md` for detailed instructions.
 
-**Output**:
-- `data/train/` - Training images organized by class
-- `data/validation/` - Validation images (20% split)
+**Image sources**:
+- Google Images
+- Flickr Creative Commons
+- Unsplash / Pexels
+- Your own photos (best results!)
+
+**Place images in**:
+- `data/train/<landmark_name>/` - Training images organized by class
 
 **Important Notes**:
-- Downloads ~15 images per landmark automatically
-- **Recommended**: Manually add 20-50 high-quality images per landmark for better accuracy
+- Collect 20-50 high-quality images per landmark
 - Ensure diverse angles, lighting conditions, and seasons
 - Remove low-quality or incorrect images
 
@@ -158,7 +160,6 @@ private func loadModel() {
 ml_training/
 ├── scripts/
 │   ├── fetch_landmarks.py          # Fetch landmarks from Supabase
-│   ├── download_images.py          # Download training images
 │   ├── train_model.py              # Train the model
 │   ├── convert_to_coreml.py        # Convert to Core ML
 │   └── copy_model_to_xcode.sh      # Copy model to Xcode
@@ -190,10 +191,10 @@ ml_training/
 - **Ideal**: 100+ images per landmark
 
 **Image Sources**:
-- Wikimedia Commons (already automated)
-- Google Images (manual download)
+- Google Images
 - Flickr Creative Commons
-- Your own photos
+- Unsplash / Pexels
+- Your own photos (best results!)
 
 **Image Quality Guidelines**:
 - Different times of day (morning, afternoon, evening)

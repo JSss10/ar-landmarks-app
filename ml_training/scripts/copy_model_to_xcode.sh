@@ -12,7 +12,7 @@ if [ ! -f "$MODEL_FILE" ]; then
     echo "Error: Model file not found at $MODEL_FILE"
     echo "Run the training pipeline first:"
     echo "  1. python scripts/fetch_landmarks.py"
-    echo "  2. python scripts/download_images.py"
+    echo "  2. Collect training images manually"
     echo "  3. python scripts/train_model.py"
     echo "  4. python scripts/convert_to_coreml.py"
     exit 1

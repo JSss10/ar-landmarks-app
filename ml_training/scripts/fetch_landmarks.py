@@ -101,8 +101,8 @@ def main():
         print(f"  ... and {len(landmarks) - 5} more")
 
     print(f"\nNext steps:")
-    print(f"  1. Run 'python scripts/download_images.py' to download training images")
-    print(f"  2. Manually collect more images for landmarks (optional)")
+    print(f"  1. Collect training images manually (20-50 per landmark)")
+    print(f"  2. Place images in ml_training/data/train/<landmark_name>/")
     print(f"  3. Run 'python scripts/train_model.py' to train the model")
     print(f"{'='*60}")
 

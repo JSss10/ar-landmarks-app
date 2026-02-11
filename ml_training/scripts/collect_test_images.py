@@ -6,9 +6,7 @@ These images can be displayed on a screen for initial testing.
 import json
 import os
 import sys
-import time
 from pathlib import Path
-import requests
 from tqdm import tqdm
 
 
@@ -25,69 +23,6 @@ def load_landmarks(data_dir='ml_training/data'):
         landmarks = json.load(f)
 
     return landmarks
-
-
-def get_wikimedia_image(query, image_size='1024'):
-    """
-    Get a high-quality image from Wikimedia Commons.
-    Returns the image URL.
-    """
-    url = "https://commons.wikimedia.org/w/api.php"
-
-    # Wikimedia requires a User-Agent header
-    headers = {
-        'User-Agent': 'ARLandmarksApp/1.0 (ML Training; Educational Use) Python/requests'
-    }
-
-    params = {
-        'action': 'query',
-        'format': 'json',
-        'generator': 'search',
-        'gsrsearch': f'{query} Zurich',
-        'gsrnamespace': '6',  # File namespace
-        'gsrlimit': 1,  # Just get the best match
-        'prop': 'imageinfo',
-        'iiprop': 'url|size',
-        'iiurlwidth': image_size
-    }
-
-    try:
-        response = requests.get(url, params=params, headers=headers, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-
-        if 'query' in data and 'pages' in data['query']:
-            for page in data['query']['pages'].values():
-                if 'imageinfo' in page:
-                    img_info = page['imageinfo'][0]
-                    # Prefer thumburl for specified size, fallback to original
-                    img_url = img_info.get('thumburl', img_info.get('url'))
-                    return img_url
-
-        return None
-    except Exception as e:
-        print(f"  Warning: Failed to fetch image for '{query}': {e}")
-        return None
-
-
-def download_image(url, output_path, timeout=15):
-    """Download a single image."""
-    headers = {
-        'User-Agent': 'ARLandmarksApp/1.0 (ML Training; Educational Use) Python/requests'
-    }
-
-    try:
-        response = requests.get(url, timeout=timeout, stream=True, headers=headers)
-        response.raise_for_status()
-
-        with open(output_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-
-        return True
-    except Exception as e:
-        print(f"  Failed to download: {e}")
-        return False
 
 
 def create_test_html(landmarks, test_dir):
@@ -304,7 +239,7 @@ def main():
     successful = 0
     failed = []
 
-    for landmark in tqdm(landmarks, desc="Downloading"):
+    for landmark in tqdm(landmarks, desc="Scanning"):
         name = landmark.get('name_en', landmark['name'])
         landmark_id = landmark['id']
 
@@ -314,7 +249,7 @@ def main():
 
         output_path = TEST_DIR / f"{class_name}.jpg"
 
-        # Skip if already exists
+        # Check if image was manually placed
         if output_path.exists():
             successful += 1
             viewer_data.append({
@@ -323,26 +258,8 @@ def main():
                 'name_en': name,
                 'class_name': class_name
             })
-            continue
-
-        # Download image
-        image_url = get_wikimedia_image(name, IMAGE_SIZE)
-
-        if image_url:
-            if download_image(image_url, output_path):
-                successful += 1
-                viewer_data.append({
-                    'id': landmark_id,
-                    'name': landmark['name'],
-                    'name_en': name,
-                    'class_name': class_name
-                })
-            else:
-                failed.append(name)
         else:
             failed.append(name)
-
-        time.sleep(0.5)  # Be nice to the API
 
     # Create HTML viewer
     print("\nCreating HTML viewer...")
