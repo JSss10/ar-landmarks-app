@@ -1,7 +1,7 @@
 {
-  "name": "zurich-poi-sync",
+  "name": "ar-landmarks-poi-sync",
   "version": "1.0.0",
-  "description": "Sync script for Zurich Tourism API POI data",
+  "description": "Sync script for Tourism API POI data",
   "type": "module",
   "scripts": {
     "sync": "node sync-zurich-pois.js",

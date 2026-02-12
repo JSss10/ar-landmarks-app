@@ -46,9 +46,9 @@ def convert_to_coreml(pytorch_model, class_labels, output_path=None):
     # Auto-detect output path
     if output_path is None:
         if Path('models').exists() or Path('.').resolve().name == 'ml_training':
-            output_path = 'models/ZurichLandmarkClassifier.mlpackage'
+            output_path = 'models/LandmarkClassifier.mlpackage'
         else:
-            output_path = 'ml_training/models/ZurichLandmarkClassifier.mlpackage'
+            output_path = 'ml_training/models/LandmarkClassifier.mlpackage'
 
     # Define input shape (batch=1, channels=3, height=224, width=224)
     example_input = torch.rand(1, 3, 224, 224)
@@ -74,7 +74,7 @@ def convert_to_coreml(pytorch_model, class_labels, output_path=None):
 
     # Add metadata
     mlmodel.author = 'ARLandmarks ML Pipeline'
-    mlmodel.short_description = 'Zurich Landmark Recognition Model'
+    mlmodel.short_description = 'AR Landmarks Recognition Model'
     mlmodel.version = '1.0'
     mlmodel.license = 'MIT'
 
@@ -158,11 +158,11 @@ def main():
     if Path('models/best_model.pth').exists():
         MODEL_PATH = Path('models/best_model.pth')
         CLASS_MAPPING_PATH = Path('data/pytorch_class_mapping.json')
-        OUTPUT_PATH = Path('models/ZurichLandmarkClassifier.mlpackage')
+        OUTPUT_PATH = Path('models/LandmarkClassifier.mlpackage')
     else:
         MODEL_PATH = Path('ml_training/models/best_model.pth')
         CLASS_MAPPING_PATH = Path('ml_training/data/pytorch_class_mapping.json')
-        OUTPUT_PATH = Path('ml_training/models/ZurichLandmarkClassifier.mlpackage')
+        OUTPUT_PATH = Path('ml_training/models/LandmarkClassifier.mlpackage')
 
     # Check if files exist
     if not MODEL_PATH.exists():

@@ -374,7 +374,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
                 </div>
 
                 <div>
-                  <label className={labelClass}>Zurich Tourism ID</label>
+                  <label className={labelClass}>Tourism ID</label>
                   <input
                     type="text"
                     value={formData.zurich_tourism_id}
@@ -407,7 +407,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
                 <Toggle
                   checked={formData.zurich_card}
                   onChange={(checked) => setFormData({ ...formData, zurich_card: checked })}
-                  label="Zurich Card"
+                  label="City Card"
                 />
               </div>
             </SectionCard>
@@ -489,13 +489,13 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
 
             <SectionCard>
               <div>
-                <label className={labelClass}>Zurich Card Description</label>
+                <label className={labelClass}>City Card Description</label>
                 <textarea
                   value={formData.zurich_card_description}
                   onChange={(e) => setFormData({ ...formData, zurich_card_description: e.target.value })}
                   rows={2}
                   className={inputClass + " resize-none"}
-                  placeholder="Benefits for Zurich Card holders"
+                  placeholder="Benefits for City Card holders"
                 />
               </div>
             </SectionCard>

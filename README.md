@@ -1,1 +1,1 @@
-# prototype
+# AR Landmarks App

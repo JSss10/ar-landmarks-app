@@ -34,7 +34,7 @@ class VisionService: ObservableObject {
     private func loadModel() {
         do {
             let config = MLModelConfiguration()
-            let mlModel = try ZurichLandmarkClassifier(configuration: config).model
+            let mlModel = try LandmarkClassifier(configuration: config).model
             model = try VNCoreMLModel(for: mlModel)
             print("✓ Vision Model loaded successfully")
         } catch {

@@ -226,7 +226,7 @@ python scripts/train_model.py
 This will:
 - Load your images
 - Train the model (~30-60 minutes)
-- Create `ZurichLandmarkClassifier.mlmodel`
+- Create `LandmarkClassifier.mlmodel`
 - Save in `ml_training/models/`
 
 ### 3. Convert to Core ML

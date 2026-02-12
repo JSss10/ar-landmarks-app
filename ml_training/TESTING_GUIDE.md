@@ -402,7 +402,7 @@ python ml_training/scripts/collect_test_images.py
 
 - Test images: `ml_training/test_images/`
 - Training data: `ml_training/data/train/`
-- Model: `ios/ARLandmarks/ARLandmarks/Models/ZurichLandmarkClassifier.mlmodel`
+- Model: `ios/ARLandmarks/ARLandmarks/Models/LandmarkClassifier.mlmodel`
 - Config: `ios/ARLandmarks/ARLandmarks/Services/VisionService.swift`
 
 ### Support

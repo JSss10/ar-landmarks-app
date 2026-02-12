@@ -4,7 +4,7 @@ This directory contains the complete machine learning pipeline for training a vi
 
 ## Overview
 
-The pipeline creates a MobileNetV3-based image classifier that can recognize Zurich landmarks in real-time through the camera feed. The model uses transfer learning for efficient training and is optimized for mobile deployment.
+The pipeline creates a MobileNetV3-based image classifier that can recognize landmarks in real-time through the camera feed. The model uses transfer learning for efficient training and is optimized for mobile deployment.
 
 ## Architecture
 
@@ -114,7 +114,7 @@ python scripts/convert_to_coreml.py
 ```
 
 **Output**:
-- `models/ZurichLandmarkClassifier.mlmodel` - Core ML model
+- `models/LandmarkClassifier.mlmodel` - Core ML model
 - `models/class_mapping_swift.json` - Class to landmark ID mapping for Swift
 
 ### Step 5: Deploy to iOS
@@ -143,7 +143,7 @@ private let classToLandmarkID: [String: String] = [
 private func loadModel() {
     do {
         let config = MLModelConfiguration()
-        let mlModel = try ZurichLandmarkClassifier(configuration: config).model
+        let mlModel = try LandmarkClassifier(configuration: config).model
         model = try VNCoreMLModel(for: mlModel)
         print("Vision Model loaded")
     } catch {
@@ -175,7 +175,7 @@ ml_training/
 │       └── ...
 ├── models/
 │   ├── best_model.pth              # Best PyTorch model
-│   ├── ZurichLandmarkClassifier.mlmodel  # Core ML model
+│   ├── LandmarkClassifier.mlmodel  # Core ML model
 │   └── training_history.json       # Training metrics
 ├── requirements.txt                # Python dependencies
 ├── .env.example                    # Environment variables template

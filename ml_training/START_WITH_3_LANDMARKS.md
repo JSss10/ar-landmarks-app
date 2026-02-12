@@ -137,7 +137,7 @@ python scripts/convert_to_coreml.py
 ```
 
 **Output**:
-- `ml_training/models/ZurichLandmarkClassifier.mlmodel`
+- `ml_training/models/LandmarkClassifier.mlmodel`
 - `ml_training/models/class_mapping_swift.json`
 
 ---

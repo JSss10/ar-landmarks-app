@@ -170,7 +170,7 @@ export default function Home() {
     setIsSyncing(true)
 
     try {
-      const response = await fetch('/api/sync-zurich-pois', {
+      const response = await fetch('/api/sync-pois', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -219,7 +219,7 @@ export default function Home() {
                 Landmarks
               </h1>
               <p className="text-sm sm:text-base text-gray-500 mt-1">
-                Manage AR landmarks for Zurich
+                Manage AR landmarks
               </p>
             </div>
             <div className="flex items-center gap-3">

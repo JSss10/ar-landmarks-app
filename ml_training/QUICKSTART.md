@@ -70,7 +70,7 @@ python scripts/update_vision_service.py
 ## Verify in Xcode
 
 1. Open `ios/ARLandmarks/ARLandmarks.xcodeproj`
-2. Check that `Models/ZurichLandmarkClassifier.mlmodel` exists
+2. Check that `Models/LandmarkClassifier.mlmodel` exists
 3. Build and run (⌘R)
 4. Point camera at a landmark
 5. Watch for recognition overlay!

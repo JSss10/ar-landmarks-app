@@ -50,13 +50,13 @@ def update_vision_service(swift_mapping_code):
     new_content = re.sub(pattern, swift_mapping_code.strip(), content, flags=re.DOTALL)
 
     # Uncomment the model loading code if it's still commented
-    if '/*' in new_content and 'ZurichLandmarkClassifier' in new_content:
+    if '/*' in new_content and 'LandmarkClassifier' in new_content:
         # Find and uncomment the loadModel function
         new_content = re.sub(
             r'/\*\s*do \{.*?Model: Waiting for trained Create ML Model"\)\s*\*/',
             '''do {
             let config = MLModelConfiguration()
-            let mlModel = try ZurichLandmarkClassifier(configuration: config).model
+            let mlModel = try LandmarkClassifier(configuration: config).model
             model = try VNCoreMLModel(for: mlModel)
             print("Vision Model loaded")
         } catch {

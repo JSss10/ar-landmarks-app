@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ML_DIR="$(dirname "$SCRIPT_DIR")"
 PROJECT_DIR="$(dirname "$ML_DIR")"
 
-MODEL_PACKAGE="$ML_DIR/models/ZurichLandmarkClassifier.mlpackage"
+MODEL_PACKAGE="$ML_DIR/models/LandmarkClassifier.mlpackage"
 XCODE_MODELS_DIR="$PROJECT_DIR/ios/ARLandmarks/ARLandmarks/Models"
 
 # Check if model exists
@@ -25,10 +25,10 @@ mkdir -p "$XCODE_MODELS_DIR"
 
 # Copy model package (it's a directory)
 echo "Copying model to Xcode project..."
-rm -rf "$XCODE_MODELS_DIR/ZurichLandmarkClassifier.mlpackage"
+rm -rf "$XCODE_MODELS_DIR/LandmarkClassifier.mlpackage"
 cp -R "$MODEL_PACKAGE" "$XCODE_MODELS_DIR/"
 
-echo "✓ Model copied to $XCODE_MODELS_DIR/ZurichLandmarkClassifier.mlpackage"
+echo "✓ Model copied to $XCODE_MODELS_DIR/LandmarkClassifier.mlpackage"
 echo ""
 echo "Next steps:"
 echo "  1. Open your Xcode project"
