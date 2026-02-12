@@ -185,6 +185,8 @@ open ios/ARLandmarks/ARLandmarks.xcodeproj
 
 ### 4. Dashboard einrichten
 
+> **Live-Demo:** Das Dashboard ist deployed unter [ar-landmarks-app.vercel.app](https://ar-landmarks-app.vercel.app/)
+
 Die vollständige Anleitung findest du in der [Dashboard README](dashboard/README.md). Hier die Kurzfassung:
 
 ```bash
