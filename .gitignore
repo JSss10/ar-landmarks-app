@@ -40,3 +40,6 @@ playground.xcworkspace
 # Secrets (xcconfig)
 Secrets*.xcconfig
 !Secrets*.example.xcconfig
+
+# API Keys (nicht auf GitHub pushen)
+SETUP_KEYS.md
