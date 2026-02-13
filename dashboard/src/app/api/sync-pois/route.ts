@@ -16,8 +16,41 @@ function stripHtml(html: string | null | undefined): string | null {
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&auml;/g, 'ä')
+    .replace(/&ouml;/g, 'ö')
+    .replace(/&uuml;/g, 'ü')
+    .replace(/&Auml;/g, 'Ä')
+    .replace(/&Ouml;/g, 'Ö')
+    .replace(/&Uuml;/g, 'Ü')
+    .replace(/&szlig;/g, 'ß')
+    .replace(/&ndash;/g, '–')
+    .replace(/&mdash;/g, '—')
+    .replace(/&lsquo;/g, '\u2018')
+    .replace(/&rsquo;/g, '\u2019')
+    .replace(/&ldquo;/g, '\u201C')
+    .replace(/&rdquo;/g, '\u201D')
+    .replace(/&hellip;/g, '…')
     .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec)))
+    .replace(/&[a-zA-Z]+;/g, '')
     .trim();
+}
+
+function formatOpens(opens: string | null | undefined): string | null {
+  if (!opens) return null;
+  return opens.replace(/,(?!\s)/g, ', ').trim() || null;
+}
+
+function formatOpeningHours(hours: any): string | null {
+  if (!hours) return null;
+  if (Array.isArray(hours)) {
+    return hours.join(', ');
+  }
+  const str = String(hours);
+  return str
+    .replace(/^\[|\]$/g, '')
+    .replace(/"/g, '')
+    .trim() || null;
 }
 
 function extractCategory(categoryObj: Record<string, any> | null): string | null {
@@ -106,15 +139,22 @@ function transformPOI(poi: any) {
   const nameEn = poi.name?.en || poi.name?.de || 'Unknown';
   const disambiguatingDescription = stripHtml(poi.disambiguatingDescription?.en);
   const descriptionEn = stripHtml(poi.description?.en);
-  const titleTeaser = poi.titleTeaser?.en || null;
-  const textTeaser = poi.textTeaser?.en || null;
-  const detailedInformation = Array.isArray(poi.detailedInformation?.en) ? poi.detailedInformation.en : null;
-  const zurichCardDescription = poi.zurichCardDescription || null;
+  const titleTeaser = stripHtml(poi.titleTeaser?.en);
+  const textTeaser = stripHtml(poi.textTeaser?.en);
+  const detailedInformation = Array.isArray(poi.detailedInformation?.en)
+    ? poi.detailedInformation.en.map((item: string) => stripHtml(item) || item)
+    : null;
+  const zurichCardDescriptionRaw = poi.zurichCardDescription;
+  const zurichCardDescription = stripHtml(
+    typeof zurichCardDescriptionRaw === 'object' && zurichCardDescriptionRaw !== null
+      ? zurichCardDescriptionRaw.en || zurichCardDescriptionRaw.de || null
+      : zurichCardDescriptionRaw
+  );
   const zurichCard = typeof poi.zurichCard === 'boolean' ? poi.zurichCard : null;
 
   const primaryImage = poi.image?.url || null;
   const imageCaption = poi.image?.caption?.en || null;
-  const price = formatPrice(poi.price?.en);
+  const price = formatPrice(stripHtml(poi.price?.en));
 
   const address = poi.address || {};
   const coords = poi.geoCoordinates || {};
@@ -141,10 +181,10 @@ function transformPOI(poi: any) {
     image_caption: imageCaption,
     price: price,
     date_modified: poi.dateModified || null,
-    opens: poi.opens || null,
-    opening_hours: poi.openingHours || null,
+    opens: formatOpens(poi.opens),
+    opening_hours: formatOpeningHours(poi.openingHours),
     opening_hours_specification: poi.openingHoursSpecification || null,
-    special_opening_hours: poi.specialOpeningHoursSpecification?.en || null,
+    special_opening_hours: stripHtml(poi.specialOpeningHoursSpecification?.en),
     address_country: address.addressCountry || null,
     street_address: address.streetAddress || null,
     postal_code: address.postalCode || null,

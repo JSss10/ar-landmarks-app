@@ -54,8 +54,41 @@ function stripHtml(html) {
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
+    .replace(/&apos;/g, "'")
+    .replace(/&auml;/g, "ä")
+    .replace(/&ouml;/g, "ö")
+    .replace(/&uuml;/g, "ü")
+    .replace(/&Auml;/g, "Ä")
+    .replace(/&Ouml;/g, "Ö")
+    .replace(/&Uuml;/g, "Ü")
+    .replace(/&szlig;/g, "ß")
+    .replace(/&ndash;/g, "–")
+    .replace(/&mdash;/g, "—")
+    .replace(/&lsquo;/g, "\u2018")
+    .replace(/&rsquo;/g, "\u2019")
+    .replace(/&ldquo;/g, "\u201C")
+    .replace(/&rdquo;/g, "\u201D")
+    .replace(/&hellip;/g, "…")
+    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec)))
+    .replace(/&[a-zA-Z]+;/g, "")
     .trim();
+}
+
+function formatOpens(opens) {
+  if (!opens) return null;
+  return opens.replace(/,(?!\s)/g, ", ").trim() || null;
+}
+
+function formatOpeningHours(hours) {
+  if (!hours) return null;
+  if (Array.isArray(hours)) {
+    return hours.join(", ");
+  }
+  const str = String(hours);
+  return str
+    .replace(/^\[|\]$/g, "")
+    .replace(/"/g, "")
+    .trim() || null;
 }
 
 /**
@@ -128,11 +161,23 @@ function transformPOI(poi) {
 
   const categoryName = extractCategory(poi.category);
 
+  const zurichCardDescriptionRaw = poi.zurichCardDescription;
+  const zurichCardDescription = stripHtml(
+    typeof zurichCardDescriptionRaw === "object" && zurichCardDescriptionRaw !== null
+      ? zurichCardDescriptionRaw.en || zurichCardDescriptionRaw.de || null
+      : zurichCardDescriptionRaw,
+  );
+
   return {
     name: nameEn,
     name_en: nameEn,
     description: descriptionEn,
     description_en: descriptionEn,
+    title_teaser: stripHtml(poi.titleTeaser?.en),
+    text_teaser: stripHtml(poi.textTeaser?.en),
+    zurich_card_description: zurichCardDescription,
+    zurich_card: typeof poi.zurichCard === "boolean" ? poi.zurichCard : null,
+    price: stripHtml(poi.price?.en) || null,
 
     latitude: coords.latitude || 47.3769,
     longitude: coords.longitude || 8.5417,
@@ -152,7 +197,9 @@ function transformPOI(poi) {
     is_active: true,
 
     category_name: categoryName,
-    opening_hours: poi.openingHours,
+    opens: formatOpens(poi.opens),
+    opening_hours: formatOpeningHours(poi.openingHours),
+    special_opening_hours: stripHtml(poi.specialOpeningHoursSpecification?.en),
     photos: poi.photo || [],
   };
 }
