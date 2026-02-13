@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, useEffect, useRef, FormEvent } from 'react'
 import { toast } from 'sonner'
 import Modal from './Modal'
 import { Landmark } from '@/lib/supabase/types'
@@ -25,6 +25,27 @@ function formatDateForDisplay(dateString: string | null | undefined): string {
   } catch {
     return dateString
   }
+}
+
+function toDateInputValue(dateString: string | null | undefined): string {
+  if (!dateString) return ''
+  try {
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return ''
+    return date.toISOString().split('T')[0]
+  } catch {
+    return ''
+  }
+}
+
+function fromDateInputValue(value: string): string {
+  if (!value) return ''
+  const date = new Date(value + 'T00:00:00')
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
 }
 
 function parseOpeningHours(hours: string | null | undefined): string {
@@ -142,6 +163,7 @@ function PhotoCard({
 
 export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: LandmarkModalProps) {
   const supabase = getSupabaseBrowserClient()
+  const dateInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -415,18 +437,27 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
             <SectionCard>
               <div>
                 <label className={labelClass}>Date Modified</label>
-                <input
-                  type="text"
-                  value={formData.date_modified}
-                  onChange={(e) => setFormData({ ...formData, date_modified: e.target.value })}
-                  className={inputClass}
-                  placeholder="2025-11-05T16:13"
-                />
-                {formData.date_modified && (
-                  <p className="text-[13px] text-gray-500 mt-2">
-                    {formatDateForDisplay(formData.date_modified)}
-                  </p>
-                )}
+                <div className="relative">
+                  <input
+                    ref={dateInputRef}
+                    type="date"
+                    value={toDateInputValue(formData.date_modified)}
+                    onChange={(e) => setFormData({ ...formData, date_modified: e.target.value ? fromDateInputValue(e.target.value) : '' })}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    tabIndex={-1}
+                  />
+                  <div
+                    onClick={() => dateInputRef.current?.showPicker()}
+                    className={inputClass + " cursor-pointer flex items-center justify-between"}
+                  >
+                    <span className={formData.date_modified ? "text-gray-900" : "text-gray-400"}>
+                      {formData.date_modified ? formatDateForDisplay(formData.date_modified) : 'Select date'}
+                    </span>
+                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </SectionCard>
           </div>

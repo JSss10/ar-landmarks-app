@@ -115,7 +115,7 @@ export default function Auth({ user }: AuthProps) {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-500">Last sign in</span>
                   <span className="text-xs text-gray-600">
-                    {new Date(currentUser.last_sign_in_at).toLocaleDateString()}
+                    {new Date(currentUser.last_sign_in_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
                 </div>
               )}
