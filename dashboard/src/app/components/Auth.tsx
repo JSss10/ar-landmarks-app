@@ -123,7 +123,7 @@ export default function Auth({ user }: AuthProps) {
 
             <button
               onClick={handleSignOut}
-              className="mt-6 w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+              className="mt-6 w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 rounded-lg transition-all shadow-sm"
             >
               Sign Out
             </button>
@@ -198,7 +198,7 @@ export default function Auth({ user }: AuthProps) {
 
             <button
               type="submit"
-              className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+              className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 rounded-lg transition-all shadow-sm"
             >
               {mode === "signin" ? "Sign In" : "Create Account"}
             </button>

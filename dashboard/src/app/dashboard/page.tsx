@@ -216,10 +216,10 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
-                Landmarks
+                AR Landmarks
               </h1>
               <p className="text-sm sm:text-base text-gray-500 mt-1">
-                Manage AR landmarks
+                Manage the landmarks and points of interest of Zurich.
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -249,7 +249,7 @@ export default function Home() {
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-linear-to-b from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 border shadow-sm transition-all active:scale-95 overflow-hidden"
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 shadow-sm transition-all active:scale-95 overflow-hidden"
                   title={user?.email || 'Profile'}
                 >
                   {getUserAvatarUrl(user) ? (
@@ -260,7 +260,7 @@ export default function Home() {
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <span className="text-sm font-semibold text-gray-600">
+                    <span className="text-sm font-semibold text-white">
                       {getUserInitials(user)}
                     </span>
                   )}
@@ -279,7 +279,7 @@ export default function Home() {
                     <div className="py-1">
                       <button
                         onClick={handleSignOut}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
@@ -301,11 +301,11 @@ export default function Home() {
             </div>
             <div className="text-sm text-gray-500 mt-0.5">Total landmarks</div>
           </div>
-          <div className="bg-green-50 rounded-xl p-4 sm:p-5 border border-green-200/60">
-            <div className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
+          <div className="bg-linear-to-r from-blue-500 to-cyan-400 rounded-xl p-4 sm:p-5 shadow-sm">
+            <div className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">
               {landmarks.filter(l => l.is_active).length}
             </div>
-            <div className="text-sm text-green-700 mt-0.5">Active</div>
+            <div className="text-sm text-white/80 mt-0.5">Active</div>
           </div>
         </div>
 
@@ -457,7 +457,7 @@ export default function Home() {
                       </td>
                       <td className="px-4 sm:px-6 py-3.5">
                         <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-md ${landmark.is_active
-                          ? 'bg-green-50 text-green-700'
+                          ? 'bg-blue-500 text-white'
                           : 'bg-gray-100 text-gray-600'
                           }`}>
                           {landmark.is_active ? 'Active' : 'Inactive'}

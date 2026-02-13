@@ -87,7 +87,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (che
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6.5 w-11.5 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 ${checked ? 'bg-green-500' : 'bg-gray-200'
+        className={`relative inline-flex h-6.5 w-11.5 shrink-0 items-center rounded-full transition-all duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 ${checked ? 'bg-linear-to-r from-blue-500 to-cyan-400' : 'bg-gray-200'
           }`}
       >
         <span
@@ -807,7 +807,7 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2.5 text-[15px] font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-xl transition-all duration-200 disabled:opacity-50 shadow-sm active:scale-[0.98]"
+            className="px-5 py-2.5 text-[15px] font-medium text-white bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 rounded-xl transition-all duration-200 disabled:opacity-50 shadow-sm active:scale-[0.98]"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
