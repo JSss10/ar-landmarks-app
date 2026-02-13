@@ -43,6 +43,24 @@ Bevor du loslegst, stelle sicher, dass du folgende Accounts und Programme hast:
 | **Python** (Version 3.8+) | ML-Modell trainieren     | [python.org](https://python.org)   |
 | **Git**                   | Code herunterladen       | [git-scm.com](https://git-scm.com) |
 
+## Hinweis für Prüfer:innen
+
+> Diesem Projekt liegen zwei separate Dateien bei, die **nicht** im Git-Repository enthalten sind:
+>
+> - **`SETUP_KEYS.md`** – Enthält alle API-Keys (Supabase, OpenWeatherMap), die du in den Konfigurationsdateien eintragen musst.
+> - **`DASHBOARD_LOGIN_CREDENTIALS.md`** – Enthält die Login-Daten für das Dashboard. Du kannst diese verwenden oder dir auf der Login-Seite selbst einen Account erstellen.
+>
+> Die **Supabase-Datenbank ist bereits eingerichtet und mit Landmark-Daten befüllt**. Du musst weder ein eigenes Supabase-Projekt erstellen noch die Datenbank-Tabellen manuell anlegen. Verwende einfach die Keys aus `SETUP_KEYS.md`.
+>
+> **Kurzfassung – was du tun musst:**
+> 1. Repository klonen (Schritt 1)
+> 2. ~~Supabase-Datenbank einrichten~~ → **Überspringe Schritt 2** (bereits erledigt)
+> 3. iOS-App: Keys aus `SETUP_KEYS.md` in `Secrets.xcconfig` eintragen (Schritt 3)
+> 4. Dashboard: Keys aus `SETUP_KEYS.md` in `.env.local` eintragen (Schritt 4)
+> 5. ~~Landmarks importieren~~ → **Überspringe Schritt 5** (Daten sind bereits vorhanden)
+>
+> Das Dashboard ist auch online erreichbar unter: [ar-landmarks-app.vercel.app](https://ar-landmarks-app.vercel.app/)
+
 ## Schnellstart
 
 ### 1. Projekt herunterladen
@@ -56,7 +74,9 @@ cd ar-landmarks-app
 
 ### 2. Supabase-Datenbank einrichten
 
-Die App braucht eine Datenbank. Erstelle folgende Tabellen in deinem Supabase-Projekt:
+> **Hinweis:** Falls du die mitgelieferten Supabase-Zugangsdaten verwendest, ist die Datenbank bereits vollständig eingerichtet. Du kannst direkt zu **Schritt 3** springen.
+
+Die folgenden Schritte sind nur nötig, wenn du ein eigenes Supabase-Projekt verwendest. Erstelle folgende Tabellen:
 
 1. Gehe zu [supabase.com](https://supabase.com) und öffne dein Projekt
 2. Klicke links auf **SQL Editor**
@@ -217,10 +237,13 @@ cp .env.example .env.local
    ```
 
 6. Öffne [http://localhost:3000](http://localhost:3000) im Browser
+7. Melde dich mit den Zugangsdaten aus `DASHBOARD_LOGIN_CREDENTIALS.md` an oder erstelle einen neuen Account auf der Login-Seite
 
 ### 5. Landmarks importieren (optional)
 
-Um Sehenswürdigkeiten aus der Zurich Tourism API zu importieren:
+> **Hinweis:** Falls du die mitgelieferten Supabase-Zugangsdaten verwendest, ist die Datenbank bereits mit Landmarks befüllt. Du kannst diesen Schritt überspringen.
+
+Um Sehenswürdigkeiten aus der Zurich Tourism API zu importieren (nur nötig bei einer leeren Datenbank):
 
 ```bash
 # 1. In den Scripts-Ordner wechseln

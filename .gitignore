@@ -67,5 +67,6 @@ playground.xcworkspace
 Secrets*.xcconfig
 !Secrets*.example.xcconfig
 
-# API Keys (nicht auf GitHub pushen)
+# API Keys und Zugangsdaten (nicht auf GitHub pushen)
 SETUP_KEYS.md
+DASHBOARD_LOGIN_CREDENTIALS.md
