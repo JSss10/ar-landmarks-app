@@ -6,13 +6,15 @@ Eine iOS-App, die Sehenswürdigkeiten in Echtzeit über die Kamera erkennt und I
 
 Das Projekt besteht aus drei Teilen:
 
-| Teil | Beschreibung | Technologie |
-|------|-------------|-------------|
-| **iOS App** | AR-Kamera-App mit Landmark-Erkennung | Swift, SwiftUI, Core ML, ARKit |
-| **Dashboard** | Web-Oberfläche zur Verwaltung der Landmarks | Next.js, React, TypeScript |
+| Teil            | Beschreibung                                  | Technologie                    |
+| --------------- | --------------------------------------------- | ------------------------------ |
+| **iOS App**     | AR-Kamera-App mit Landmark-Erkennung          | Swift, SwiftUI, Core ML, ARKit |
+| **Dashboard**   | Web-Oberfläche zur Verwaltung der Landmarks   | Next.js, React, TypeScript     |
 | **ML Training** | Pipeline zum Trainieren des Erkennungsmodells | Python, PyTorch, Core ML Tools |
 
 ## Was du brauchst
+
+> **Wichtig:** Dieses Projekt erfordert einen **Mac** (macOS 14+) und ein **iPhone** (iOS 15+). Die iOS-App nutzt ARKit und die Kamera, deshalb funktioniert sie nur auf einem echten iPhone - nicht im Simulator und nicht auf Android. Das Dashboard (Web) läuft auf jedem Betriebssystem, aber die iOS-App kann nur auf einem Mac mit Xcode gebaut werden.
 
 Bevor du loslegst, stelle sicher, dass du folgende Accounts und Programme hast:
 
@@ -34,12 +36,12 @@ Bevor du loslegst, stelle sicher, dass du folgende Accounts und Programme hast:
 
 ### Programme
 
-| Programm | Wofür | Download |
-|----------|--------|----------|
-| **Xcode** (Version 16+) | iOS-App bauen und testen | Mac App Store |
-| **Node.js** (Version 18+) | Dashboard starten | [nodejs.org](https://nodejs.org) |
-| **Python** (Version 3.8+) | ML-Modell trainieren | [python.org](https://python.org) |
-| **Git** | Code herunterladen | [git-scm.com](https://git-scm.com) |
+| Programm                  | Wofür                    | Download                           |
+| ------------------------- | ------------------------ | ---------------------------------- |
+| **Xcode** (Version 16+)   | iOS-App bauen und testen | Mac App Store                      |
+| **Node.js** (Version 18+) | Dashboard starten        | [nodejs.org](https://nodejs.org)   |
+| **Python** (Version 3.8+) | ML-Modell trainieren     | [python.org](https://python.org)   |
+| **Git**                   | Code herunterladen       | [git-scm.com](https://git-scm.com) |
 
 ## Schnellstart
 
@@ -201,6 +203,7 @@ cp .env.example .env.local
 ```
 
 4. Öffne `.env.local` und trage deine Supabase-Daten ein:
+
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://DEIN-PROJEKT.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=DEIN_ANON_KEY
@@ -208,6 +211,7 @@ cp .env.example .env.local
    ```
 
 5. Dashboard starten:
+
    ```bash
    npm run dev
    ```
@@ -230,6 +234,7 @@ cp .env.example .env
 ```
 
 4. Öffne `.env` und trage ein:
+
    ```
    SUPABASE_URL=https://DEIN-PROJEKT.supabase.co
    SUPABASE_SERVICE_KEY=DEIN_SERVICE_ROLE_KEY
@@ -274,25 +279,30 @@ ar-landmarks-app/
 
 ## Detaillierte Anleitungen
 
-| Anleitung | Beschreibung |
-|-----------|-------------|
-| [iOS App Setup](ios/ARLandmarks/README.md) | Schritt-für-Schritt iOS-App einrichten |
-| [Dashboard Setup](dashboard/README.md) | Dashboard lokal starten und deployen |
-| [ML Training](ml_training/README.md) | Eigenes Erkennungsmodell trainieren, testen und verbessern |
+| Anleitung                                  | Beschreibung                                               |
+| ------------------------------------------ | ---------------------------------------------------------- |
+| [iOS App Setup](ios/ARLandmarks/README.md) | Schritt-für-Schritt iOS-App einrichten                     |
+| [Dashboard Setup](dashboard/README.md)     | Dashboard lokal starten und deployen                       |
+| [ML Training](ml_training/README.md)       | Eigenes Erkennungsmodell trainieren, testen und verbessern |
 
 ## Häufige Probleme
 
 ### "npm: command not found"
+
 Node.js ist nicht installiert. Lade es von [nodejs.org](https://nodejs.org) herunter und installiere die LTS-Version.
 
 ### "python3: command not found"
+
 Python ist nicht installiert. Lade es von [python.org](https://python.org) herunter. Auf dem Mac kannst du auch `brew install python3` verwenden, falls Homebrew installiert ist.
 
 ### "Xcode-Projekt lässt sich nicht öffnen"
+
 Stelle sicher, dass Xcode installiert ist (Mac App Store). Die App kann nur auf einem Mac entwickelt werden.
 
 ### "Dashboard zeigt Fehler beim Starten"
+
 Prüfe, ob die `.env.local`-Datei korrekt ausgefüllt ist und ob der Supabase-Key stimmt.
 
 ### "iOS-App verbindet sich nicht mit Supabase"
+
 Prüfe, ob `Secrets.xcconfig` korrekt ausgefüllt ist (nicht `Secrets.example.xcconfig`).
