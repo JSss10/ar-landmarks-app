@@ -73,11 +73,18 @@ struct LandmarkRowView: View {
     private var categoryIcon: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color(hex: landmark.category?.color ?? "#3B82F6").opacity(0.15))
+                .fill(
+                    LinearGradient(
+                        colors: [.blue, .cyan],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .frame(width: 56, height: 56)
 
-            Text(landmark.category?.icon ?? "📍")
-                .font(.system(size: 24))
+            Image(systemName: "mappin.and.ellipse")
+                .font(.system(size: 24, weight: .medium))
+                .foregroundColor(.white)
         }
     }
 }

@@ -30,70 +30,68 @@ struct LandmarkListView: View {
     @State private var showingSortOptions = false
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if viewModel.isLoading {
-                    VStack {
-                        Spacer()
-                        GradientLoadingView()
-                        Spacer()
+        Group {
+            if viewModel.isLoading && viewModel.landmarks.isEmpty {
+                VStack {
+                    Spacer()
+                    GradientLoadingView()
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+            } else if let error = viewModel.errorMessage, viewModel.landmarks.isEmpty {
+                VStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 40))
+                        .foregroundColor(.red)
+                    Text(error)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                    Button("Try Again") {
+                        Task { await viewModel.loadData() }
                     }
-                    .frame(maxWidth: .infinity)
-                } else if let error = viewModel.errorMessage {
-                    VStack(spacing: 16) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 40))
-                            .foregroundColor(.red)
-                        Text(error)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                        Button("Try Again") {
-                            Task { await viewModel.loadData() }
-                        }
-                        .buttonStyle(.borderedProminent)
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
+            } else {
+                VStack(spacing: 0) {
+                    if !uniqueCategories.isEmpty {
+                        categoryFilterBar
                     }
-                    .padding()
-                } else {
-                    VStack(spacing: 0) {
-                        if !uniqueCategories.isEmpty {
-                            categoryFilterBar
-                        }
 
-                        List(sortedAndFilteredLandmarks) { landmark in
-                            LandmarkRowView(landmark: landmark)
-                        }
-                        .listStyle(.plain)
+                    List(sortedAndFilteredLandmarks) { landmark in
+                        LandmarkRowView(landmark: landmark)
                     }
+                    .listStyle(.plain)
                 }
             }
-            .navigationTitle("AR Landmarks")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        ForEach(SortOption.allCases, id: \.self) { option in
-                            Button {
-                                sortOption = option
-                            } label: {
-                                HStack {
-                                    Text(option.rawValue)
-                                    if sortOption == option {
-                                        Spacer()
-                                        Image(systemName: "checkmark")
-                                    }
+        }
+        .navigationTitle("Landmark list of Zurich")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    ForEach(SortOption.allCases, id: \.self) { option in
+                        Button {
+                            sortOption = option
+                        } label: {
+                            HStack {
+                                Text(option.rawValue)
+                                if sortOption == option {
+                                    Spacer()
+                                    Image(systemName: "checkmark")
                                 }
                             }
                         }
-                    } label: {
-                        Image(systemName: "arrow.up.arrow.down")
                     }
+                } label: {
+                    Image(systemName: "arrow.up.arrow.down")
                 }
             }
-            .task {
-                await viewModel.loadData()
-            }
-            .refreshable {
-                await viewModel.loadData()
-            }
+        }
+        .task {
+            await viewModel.loadData()
+        }
+        .refreshable {
+            await viewModel.loadData()
         }
     }
 
@@ -145,7 +143,8 @@ struct LandmarkListView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .background(selectedCategories.contains(category.name) ?
-                            Color(hex: category.color) : Color.gray.opacity(0.2))
+                            AnyShapeStyle(LinearGradient(colors: [.blue, .cyan], startPoint: .leading, endPoint: .trailing)) :
+                            AnyShapeStyle(Color.gray.opacity(0.2)))
                         .foregroundColor(selectedCategories.contains(category.name) ? .white : .primary)
                         .cornerRadius(20)
                     }
