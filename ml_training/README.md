@@ -16,143 +16,124 @@ The pipeline creates a MobileNetV3-based image classifier that can recognize lan
 
 ## Prerequisites
 
-### System Requirements
-
 - Python 3.8 or later
 - macOS (recommended for Core ML tools)
 - 4GB+ RAM
 - GPU optional (will train faster with CUDA)
 
-### Installation
+## Quick Start
 
-1. **Set up Python environment**:
+### 1. Setup
 
 ```bash
 cd ml_training
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-2. **Install dependencies**:
-
-```bash
+source venv/bin/activate
 pip install -r requirements.txt
-```
-
-3. **Configure environment variables**:
-
-```bash
 cp .env.example .env
-# Edit .env and add your Supabase credentials
+# Edit .env and add your SUPABASE_URL and SUPABASE_ANON_KEY
 ```
 
-## Training Pipeline
-
-### Step 1: Fetch Landmarks
-
-Fetches all active landmarks from your Supabase database and creates a class mapping.
+### 2. Run the Full Pipeline
 
 ```bash
+./train_pipeline.sh
+```
+
+This will:
+1. Fetch landmarks from your database
+2. Pause for you to place training images
+3. Train the model
+4. Convert to Core ML format
+5. Copy to Xcode project
+6. Update VisionService.swift
+
+### 3. Manual Step-by-Step
+
+```bash
+# 1. Fetch landmarks
 python scripts/fetch_landmarks.py
-```
 
-**Output**:
-- `data/landmarks.json` - All landmark data
-- `data/class_mapping.json` - Class names to landmark IDs
+# 2. Collect images manually (20-50 per landmark)
+#    Place in ml_training/data/train/<landmark_name>/
 
-### Step 2: Collect Training Images
-
-Collect training images manually for each landmark (20-50 images per landmark).
-
-See `MANUAL_IMAGE_COLLECTION.md` for detailed instructions.
-
-**Image sources**:
-- Google Images
-- Flickr Creative Commons
-- Unsplash / Pexels
-- Your own photos (best results!)
-
-**Place images in**:
-- `data/train/<landmark_name>/` - Training images organized by class
-
-**Important Notes**:
-- Collect 20-50 high-quality images per landmark
-- Ensure diverse angles, lighting conditions, and seasons
-- Remove low-quality or incorrect images
-
-### Step 3: Train the Model
-
-Trains the landmark recognition model using transfer learning.
-
-```bash
+# 3. Train model
 python scripts/train_model.py
-```
 
-**Configuration** (edit in script if needed):
-- Epochs: 25
-- Batch size: 32
-- Learning rate: 0.001
-- Optimizer: Adam with ReduceLROnPlateau scheduler
-
-**Output**:
-- `models/best_model.pth` - Best model checkpoint
-- `models/landmark_model_final.pth` - Final model
-- `models/training_history.json` - Training metrics
-- `data/pytorch_class_mapping.json` - PyTorch class indices
-
-**Training Tips**:
-- Monitor validation accuracy - should reach 70%+ for good results
-- If overfitting (train acc >> val acc), add more data or increase dropout
-- Training takes ~30-60 minutes on CPU, ~10-20 minutes on GPU
-
-### Step 4: Convert to Core ML
-
-Converts the trained PyTorch model to Core ML format for iOS deployment.
-
-```bash
+# 4. Convert to Core ML
 python scripts/convert_to_coreml.py
+
+# 5. Copy to Xcode
+./scripts/copy_model_to_xcode.sh
+
+# 6. Update VisionService
+python scripts/update_vision_service.py
 ```
 
-**Output**:
-- `models/LandmarkClassifier.mlmodel` - Core ML model
-- `models/class_mapping_swift.json` - Class to landmark ID mapping for Swift
+### 4. Verify in Xcode
 
-### Step 5: Deploy to iOS
+1. Open `ios/ARLandmarks/ARLandmarks.xcodeproj`
+2. Check that `Models/LandmarkClassifier.mlpackage` exists
+3. Build and run
 
-Copy the model to your Xcode project:
+## Image Collection
+
+### Requirements
+
+- **Minimum**: 15 images per landmark
+- **Recommended**: 20-30 images per landmark
+- **Ideal**: 50+ images per landmark
+
+### Image Sources
+
+- **Google Images** (fastest): Search for `"Landmark Name Zurich"`
+- **Flickr Creative Commons**: Higher quality, properly licensed
+- **Unsplash / Pexels**: Professional quality, free to use
+- **Your own photos** (best results!): Exactly matches real-world usage
+
+### Folder Structure
+
+```
+ml_training/data/train/
+├── grossmunster/
+│   ├── grossmunster_001.jpg
+│   ├── grossmunster_002.jpg
+│   └── ... (20-50 images)
+├── fraumunster/
+│   ├── fraumunster_001.jpg
+│   └── ...
+└── ... (all other landmarks)
+```
+
+### Image Quality Guidelines
+
+- Different angles (front, side, corner)
+- Different distances (close-up, medium, far)
+- Different times of day and weather
+- Good resolution (min 300x300px)
+- Landmark is the primary subject
+- Clear, focused images (avoid blurry/dark)
+
+### Suggested Starting Landmarks
+
+| Landmark | Folder Name | Google Search Term |
+|----------|-------------|-------------------|
+| Grossmunster | `grossmunster` | "Grossmunster Zurich" |
+| Fraumunster | `fraumunster` | "Fraumunster Zurich" |
+| Opera House | `opera_house` | "Zurich Opera House" |
+| Bahnhofstrasse | `bahnhofstrasse` | "Bahnhofstrasse Zurich" |
+| ETH Zurich | `eth_zurich` | "ETH Zurich main building" |
+| National Museum | `national_museum` | "Swiss National Museum Zurich" |
+
+### Verify Images
 
 ```bash
-./scripts/copy_model_to_xcode.sh
+cd ml_training/data/train
+for dir in */; do
+  count=$(ls "$dir"*.jpg "$dir"*.png 2>/dev/null | wc -l)
+  echo "$dir: $count images"
+done
 ```
-
-Then update `VisionService.swift`:
-
-1. **Add the class mapping** (use the generated mapping from `class_mapping_swift.json`):
-
-```swift
-private let classToLandmarkID: [String: String] = [
-    "fraumunster": "landmark-id-1",
-    "grossmunster": "landmark-id-2",
-    // ... add all landmarks
-]
-```
-
-2. **Uncomment the model loading code** in `loadModel()`:
-
-```swift
-private func loadModel() {
-    do {
-        let config = MLModelConfiguration()
-        let mlModel = try LandmarkClassifier(configuration: config).model
-        model = try VNCoreMLModel(for: mlModel)
-        print("Vision Model loaded")
-    } catch {
-        self.error = "Model could not be loaded: \(error.localizedDescription)"
-    }
-}
-```
-
-3. **Build and run** your iOS app!
 
 ## Directory Structure
 
@@ -162,158 +143,98 @@ ml_training/
 │   ├── fetch_landmarks.py          # Fetch landmarks from Supabase
 │   ├── train_model.py              # Train the model
 │   ├── convert_to_coreml.py        # Convert to Core ML
-│   └── copy_model_to_xcode.sh      # Copy model to Xcode
+│   ├── copy_model_to_xcode.sh      # Copy model to Xcode
+│   └── update_vision_service.py    # Update iOS VisionService
 ├── data/
-│   ├── landmarks.json              # Landmark data
-│   ├── class_mapping.json          # Class to landmark mapping
-│   ├── train/                      # Training images
-│   │   ├── landmark_1/
-│   │   ├── landmark_2/
-│   │   └── ...
-│   └── validation/                 # Validation images
+│   ├── landmarks.json              # Landmark data (generated)
+│   ├── class_mapping.json          # Class to landmark mapping (generated)
+│   └── train/                      # Training images (you add these)
 │       ├── landmark_1/
 │       └── ...
 ├── models/
-│   ├── best_model.pth              # Best PyTorch model
-│   ├── LandmarkClassifier.mlmodel  # Core ML model
-│   └── training_history.json       # Training metrics
-├── requirements.txt                # Python dependencies
-├── .env.example                    # Environment variables template
-└── README.md                       # This file
+│   ├── best_model.pth              # Best PyTorch model (generated)
+│   ├── LandmarkClassifier.mlpackage # Core ML model (generated)
+│   └── training_history.json       # Training metrics (generated)
+├── requirements.txt
+├── train_pipeline.sh               # Full pipeline script
+├── .env.example
+└── README.md
+```
+
+## Training Configuration
+
+Edit `scripts/train_model.py` to adjust:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| Epochs | 25 | Training iterations |
+| Batch size | 32 | Decrease to 16 if OOM |
+| Learning rate | 0.001 | Try 0.0001 for slower learning |
+| Dropout | 0.2 | Increase to 0.3-0.4 to reduce overfitting |
+
+## Testing
+
+### Screen-Based Testing (Recommended First)
+
+1. Find reference images for each landmark online
+2. Display images full-screen on a monitor/TV
+3. Build and run the iOS app
+4. Enable "Visual Recognition" mode
+5. Point iPhone camera at screen (30-60cm distance)
+6. Check for recognition (should appear within 1-2 seconds)
+
+**Screen testing tips:**
+- Set screen brightness to 80-100%
+- Hold phone steady for 2-3 seconds
+- Test from 30-60cm distance
+- Aim for confidence score > 0.75
+
+### Real-World Testing
+
+Once screen testing shows 80%+ recognition:
+
+1. Visit actual landmarks
+2. Test from different distances (5m, 20m, 50m)
+3. Try different angles and lighting
+4. Document failures and add those cases to training data
+
+### Confidence Threshold
+
+Adjust in `VisionService.swift`:
+
+```swift
+private let minimumConfidence: Float = 0.75  // Try: 0.70, 0.65, 0.80
 ```
 
 ## Improving Model Accuracy
 
-### 1. Collect More Training Data
+1. **More data**: Add more diverse images per landmark
+2. **Own photos**: Take iPhone photos at actual locations
+3. **Data augmentation**: Already included (flips, rotations, color jitter)
+4. **Hyperparameter tuning**: Adjust epochs, learning rate, dropout
+5. **Model architecture**: Try `mobilenet_v3_large` or `efficientnet_b0` for better accuracy
+6. **Class balancing**: Ensure similar image counts across landmarks
 
-- **Minimum**: 15-20 images per landmark
-- **Recommended**: 30-50 images per landmark
-- **Ideal**: 100+ images per landmark
+## Expected Performance
 
-**Image Sources**:
-- Google Images
-- Flickr Creative Commons
-- Unsplash / Pexels
-- Your own photos (best results!)
-
-**Image Quality Guidelines**:
-- Different times of day (morning, afternoon, evening)
-- Different weather conditions (sunny, cloudy, rain)
-- Different seasons (if applicable)
-- Different angles and distances
-- Different crowd levels
-- Good resolution (min 300x300px)
-
-### 2. Data Augmentation
-
-The training script already includes:
-- Random horizontal flips
-- Random rotations (±15°)
-- Color jittering (brightness, contrast)
-
-You can add more augmentations in `train_model.py`:
-- Random crops
-- Perspective transforms
-- Gaussian blur
-
-### 3. Hyperparameter Tuning
-
-Edit `train_model.py` to adjust:
-- **Epochs**: Increase to 30-40 for more training
-- **Batch size**: Decrease to 16 if OOM, increase to 64 if you have GPU memory
-- **Learning rate**: Try 0.0001 for slower, more stable learning
-- **Dropout**: Increase to 0.3-0.4 to reduce overfitting
-
-### 4. Model Architecture
-
-Try different MobileNet variants in `train_model.py`:
-- `mobilenet_v3_large` - More accurate but larger
-- `efficientnet_b0` - Better accuracy/size tradeoff
-
-### 5. Class Balancing
-
-Ensure each landmark has roughly the same number of images. If some landmarks have very few images:
-- Collect more images for those landmarks
-- Use weighted loss (add to `train_model.py`)
-- Remove landmarks with <10 images
+| Metric | Expected |
+|--------|----------|
+| Training Accuracy | 85-95% |
+| Validation Accuracy | 70-85% |
+| Inference Time | <50ms on iPhone |
+| Model Size | ~2-5 MB |
 
 ## Troubleshooting
 
-### Low Accuracy (<50%)
-
-- **Cause**: Not enough training data
-- **Solution**: Add more images (30+ per landmark)
-
-### Model Not Loading in iOS
-
-- **Cause**: Model file not in Xcode project
-- **Solution**: Run `copy_model_to_xcode.sh` and add to Xcode
-
-### Out of Memory During Training
-
-- **Cause**: Batch size too large
-- **Solution**: Reduce `BATCH_SIZE` to 16 or 8
-
-### Poor Recognition in Real World
-
-- **Cause**: Training data doesn't match real-world conditions
-- **Solution**: Add photos taken with iPhone camera in various conditions
-
-### Classes Not Recognized
-
-- **Cause**: Class mapping mismatch
-- **Solution**: Verify `classToLandmarkID` in VisionService.swift matches the generated mapping
-
-## Model Performance
-
-Expected performance metrics:
-- **Training Accuracy**: 85-95%
-- **Validation Accuracy**: 70-85%
-- **Inference Time**: <50ms on iPhone (using Neural Engine)
-- **Model Size**: ~2-5 MB
-
-## Advanced Usage
-
-### Fine-tuning the Model
-
-To continue training from a checkpoint:
-
-```python
-# In train_model.py, before training:
-classifier.load_model('ml_training/models/best_model.pth')
-classifier.train(epochs=10, learning_rate=0.0001)
-```
-
-### Exporting Class Probabilities
-
-The model outputs probabilities for all classes. You can use this in your app:
-
-```swift
-// In VisionService.swift
-guard let results = request.results as? [VNClassificationObservation] else { return }
-
-// Get top 3 predictions
-let top3 = results.prefix(3).map { ($0.identifier, $0.confidence) }
-```
-
-### Quantization for Smaller Model
-
-To reduce model size (at slight accuracy cost):
-
-```python
-# In convert_to_coreml.py, after conversion:
-from coremltools.models.neural_network import quantization_utils
-
-mlmodel = quantization_utils.quantize_weights(mlmodel, nbits=8)
-```
+| Problem | Cause | Solution |
+|---------|-------|----------|
+| Low accuracy (<50%) | Not enough training data | Add more images (30+ per landmark) |
+| Model not loading in iOS | Model file not in Xcode project | Run `copy_model_to_xcode.sh` |
+| Out of memory during training | Batch size too large | Reduce `BATCH_SIZE` to 16 or 8 |
+| Poor real-world recognition | Training data doesn't match real conditions | Add iPhone photos from actual locations |
+| Classes not recognized | Class mapping mismatch | Verify mapping in VisionService.swift |
+| SUPABASE_URL not found | Missing .env file | Copy .env.example to .env and fill in values |
 
 ## License
 
 MIT License - See main project LICENSE file
-
-## Support
-
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review training logs in `models/training_history.json`
-3. Open an issue on the main project repository

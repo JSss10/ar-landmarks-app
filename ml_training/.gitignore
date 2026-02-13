@@ -24,6 +24,7 @@ data/*.png
 # Models (too large for git - deploy separately)
 models/*.pth
 models/*.mlmodel
+models/*.mlpackage
 models/*.onnx
 
 # Keep metadata files
