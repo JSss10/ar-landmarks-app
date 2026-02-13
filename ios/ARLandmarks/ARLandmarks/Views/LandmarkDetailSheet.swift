@@ -141,22 +141,14 @@ struct PhotoGalleryView: View {
                             SkeletonView(height: 240, cornerRadius: 16)
                                 .padding(.horizontal, 20)
                         case .success(let image):
-                            VStack(spacing: 8) {
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(height: 240)
-                                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                                    .padding(.horizontal, 20)
-
-                                if let caption = photo.caption, !caption.isEmpty {
-                                    Text(caption)
-                                        .font(.system(size: 13))
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(2)
-                                        .padding(.horizontal, 20)
-                                }
-                            }
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 240)
+                                .clipped()
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .padding(.horizontal, 20)
                         case .failure:
                             ZStack {
                                 RoundedRectangle(cornerRadius: 16)
@@ -175,20 +167,7 @@ struct PhotoGalleryView: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 280)
-
-            if photos.count > 1 {
-                HStack(spacing: 8) {
-                    ForEach(photos.indices, id: \.self) { index in
-                        Circle()
-                            .fill(index == currentIndex ? Color.blue : Color.gray.opacity(0.4))
-                            .frame(width: 8, height: 8)
-                            .scaleEffect(index == currentIndex ? 1.2 : 1.0)
-                            .animation(.spring(response: 0.3), value: currentIndex)
-                    }
-                }
-                .padding(.top, 4)
-            }
+            .frame(height: 260)
         }
     }
 }
@@ -324,7 +303,7 @@ struct LandmarkDetailSheet: View {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: "star.fill")
                             .font(.system(size: 14))
-                            .foregroundColor(.yellow)
+                            .foregroundColor(.blue)
                             .frame(width: 20)
 
                         Text(highlight)
@@ -352,7 +331,7 @@ struct LandmarkDetailSheet: View {
             HStack(alignment: .top, spacing: 16) {
                 Image(systemName: "banknote.fill")
                     .font(.system(size: 18))
-                    .foregroundColor(.green)
+                    .foregroundColor(.blue)
                     .frame(width: 24)
 
                 Text(stripHTMLTags(price))
@@ -558,7 +537,13 @@ struct LandmarkDetailSheet: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(Color.blue)
+                .background(
+                    LinearGradient(
+                        colors: [.blue, .cyan],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
                 .foregroundColor(.white)
                 .cornerRadius(14)
             }
@@ -661,6 +646,17 @@ struct LandmarkDetailSheet: View {
     private func stripHTMLTags(_ text: String) -> String {
         var result = text
 
+        // Replace block-level tags with newlines
+        let blockPattern = "<\\s*/?(br|p|div|li|tr|h[1-6])[^>]*\\s*/?>|</\\s*(ul|ol|table)\\s*>"
+        if let blockRegex = try? NSRegularExpression(pattern: blockPattern, options: [.caseInsensitive]) {
+            result = blockRegex.stringByReplacingMatches(
+                in: result,
+                range: NSRange(location: 0, length: result.utf16.count),
+                withTemplate: "\n"
+            )
+        }
+
+        // Remove remaining HTML tags
         let tagPattern = "<[^>]+>"
         if let regex = try? NSRegularExpression(pattern: tagPattern, options: [.caseInsensitive]) {
             result = regex.stringByReplacingMatches(
@@ -672,10 +668,16 @@ struct LandmarkDetailSheet: View {
 
         result = decodeHTMLEntities(result)
 
-        while result.contains("  ") {
-            result = result.replacingOccurrences(of: "  ", with: " ")
-        }
+        // Clean up multiple spaces on the same line
+        let lines = result.components(separatedBy: "\n").map { line in
+            var cleaned = line
+            while cleaned.contains("  ") {
+                cleaned = cleaned.replacingOccurrences(of: "  ", with: " ")
+            }
+            return cleaned.trimmingCharacters(in: .whitespaces)
+        }.filter { !$0.isEmpty }
 
+        result = lines.joined(separator: "\n")
         result = result.trimmingCharacters(in: .whitespacesAndNewlines)
 
         return result

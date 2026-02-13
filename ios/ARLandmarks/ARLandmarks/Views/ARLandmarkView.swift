@@ -172,7 +172,13 @@ struct ARLandmarkView: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
-                                .background(Color.blue)
+                                .background(
+                                    LinearGradient(
+                                        colors: [.blue, .cyan],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
                                 .foregroundColor(.white)
                                 .cornerRadius(12)
                             }
@@ -394,6 +400,17 @@ struct ARLandmarkView: View {
     private func stripHTMLTags(_ text: String) -> String {
         var result = text
 
+        // Replace block-level tags with newlines
+        let blockPattern = "<\\s*/?(br|p|div|li|tr|h[1-6])[^>]*\\s*/?>|</\\s*(ul|ol|table)\\s*>"
+        if let blockRegex = try? NSRegularExpression(pattern: blockPattern, options: [.caseInsensitive]) {
+            result = blockRegex.stringByReplacingMatches(
+                in: result,
+                range: NSRange(location: 0, length: result.utf16.count),
+                withTemplate: "\n"
+            )
+        }
+
+        // Remove remaining HTML tags
         let tagPattern = "<[^>]+>"
         if let regex = try? NSRegularExpression(pattern: tagPattern, options: [.caseInsensitive]) {
             result = regex.stringByReplacingMatches(
@@ -405,10 +422,16 @@ struct ARLandmarkView: View {
 
         result = decodeHTMLEntities(result)
 
-        while result.contains("  ") {
-            result = result.replacingOccurrences(of: "  ", with: " ")
-        }
+        // Clean up multiple spaces on the same line
+        let lines = result.components(separatedBy: "\n").map { line in
+            var cleaned = line
+            while cleaned.contains("  ") {
+                cleaned = cleaned.replacingOccurrences(of: "  ", with: " ")
+            }
+            return cleaned.trimmingCharacters(in: .whitespaces)
+        }.filter { !$0.isEmpty }
 
+        result = lines.joined(separator: "\n")
         result = result.trimmingCharacters(in: .whitespacesAndNewlines)
 
         return result
