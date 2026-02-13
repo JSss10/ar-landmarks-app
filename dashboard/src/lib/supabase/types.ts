@@ -63,7 +63,6 @@ export interface LandmarkPhoto {
   id: string
   landmark_id: string
   photo_url: string
-  caption: string | null
   caption_en: string | null
   sort_order: number
   is_primary: boolean

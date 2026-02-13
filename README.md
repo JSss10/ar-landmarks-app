@@ -147,7 +147,6 @@ CREATE TABLE IF NOT EXISTS landmark_photos (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   landmark_id UUID REFERENCES landmarks(id) ON DELETE CASCADE,
   photo_url TEXT NOT NULL,
-  caption TEXT,
   caption_en TEXT,
   sort_order INTEGER DEFAULT 0,
   is_primary BOOLEAN DEFAULT false,
