@@ -48,6 +48,70 @@ function fromDateInputValue(value: string): string {
   })
 }
 
+function cleanText(text: string | null | undefined): string {
+  if (!text) return ''
+  return text
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&auml;/g, 'ä')
+    .replace(/&ouml;/g, 'ö')
+    .replace(/&uuml;/g, 'ü')
+    .replace(/&Auml;/g, 'Ä')
+    .replace(/&Ouml;/g, 'Ö')
+    .replace(/&Uuml;/g, 'Ü')
+    .replace(/&szlig;/g, 'ß')
+    .replace(/&ndash;/g, '–')
+    .replace(/&mdash;/g, '—')
+    .replace(/&lsquo;/g, '\u2018')
+    .replace(/&rsquo;/g, '\u2019')
+    .replace(/&ldquo;/g, '\u201C')
+    .replace(/&rdquo;/g, '\u201D')
+    .replace(/&hellip;/g, '…')
+    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec)))
+    .replace(/&[a-zA-Z]+;/g, '')
+    .trim()
+}
+
+function cleanOpeningHours(hours: string | null | undefined): string {
+  if (!hours) return ''
+  let cleaned = hours
+  if (cleaned.startsWith('[')) {
+    try {
+      const arr = JSON.parse(cleaned)
+      if (Array.isArray(arr)) {
+        cleaned = arr.join(', ')
+      }
+    } catch {
+      cleaned = cleaned.replace(/^\[|\]$/g, '').replace(/"/g, '')
+    }
+  }
+  return cleaned.replace(/"/g, '').trim()
+}
+
+function cleanOpens(opens: string | null | undefined): string {
+  if (!opens) return ''
+  return opens.replace(/,(?!\s)/g, ', ').trim()
+}
+
+function cleanZurichCardDescription(desc: string | null | undefined): string {
+  if (!desc) return ''
+  let text = desc
+  if (text.startsWith('{')) {
+    try {
+      const obj = JSON.parse(text)
+      text = obj.en || obj.de || ''
+    } catch {
+      // not JSON, use as-is
+    }
+  }
+  return cleanText(text)
+}
+
 function parseOpeningHours(hours: string | null | undefined): string {
   if (!hours) return ''
 
@@ -208,13 +272,13 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
     if (landmark) {
       setFormData({
         name: landmark.name_en || landmark.name || '',
-        description: landmark.description_en || landmark.description || '',
-        title_teaser: landmark.title_teaser || '',
-        text_teaser: landmark.text_teaser || '',
+        description: cleanText(landmark.description_en || landmark.description),
+        title_teaser: cleanText(landmark.title_teaser),
+        text_teaser: cleanText(landmark.text_teaser),
         detailed_information: Array.isArray(landmark.detailed_information)
-          ? landmark.detailed_information.join('\n')
+          ? landmark.detailed_information.map(item => cleanText(item)).join('\n')
           : '',
-        zurich_card_description: landmark.zurich_card_description || '',
+        zurich_card_description: cleanZurichCardDescription(landmark.zurich_card_description),
         zurich_card: landmark.zurich_card ?? false,
         latitude: landmark.latitude?.toString() || '',
         longitude: landmark.longitude?.toString() || '',
@@ -223,13 +287,13 @@ export default function LandmarkModal({ isOpen, onClose, onSuccess, landmark }: 
           : '',
         image_url: landmark.image_url || '',
         image_caption: landmark.image_caption || '',
-        price: landmark.price || '',
+        price: cleanText(landmark.price),
         zurich_tourism_id: landmark.zurich_tourism_id || '',
         is_active: landmark.is_active ?? true,
         date_modified: landmark.date_modified || '',
-        opens: landmark.opens || '',
-        opening_hours: landmark.opening_hours || '',
-        special_opening_hours: landmark.special_opening_hours || '',
+        opens: cleanOpens(landmark.opens),
+        opening_hours: cleanOpeningHours(landmark.opening_hours),
+        special_opening_hours: cleanText(landmark.special_opening_hours),
         address_country: landmark.address_country || '',
         street_address: landmark.street_address || '',
         postal_code: landmark.postal_code || '',
