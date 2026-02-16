@@ -9,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 function stripHtml(html: string | null | undefined): string | null {
   if (!html) return null;
-  return html
+  const result = html
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
@@ -34,6 +34,12 @@ function stripHtml(html: string | null | undefined): string | null {
     .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec)))
     .replace(/&[a-zA-Z]+;/g, '')
     .trim();
+  return ensurePeriodSpacing(result);
+}
+
+function ensurePeriodSpacing(text: string | null): string | null {
+  if (!text) return text;
+  return text.replace(/\.(?=[A-ZÄÖÜ])/g, '. ');
 }
 
 function formatOpens(opens: any): string | null {

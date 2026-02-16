@@ -47,7 +47,7 @@ async function fetchZurichPOIs(id = 72) {
  */
 function stripHtml(html) {
   if (!html) return null;
-  return html
+  const result = html
     .replace(/<[^>]*>/g, "")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
@@ -72,6 +72,17 @@ function stripHtml(html) {
     .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec)))
     .replace(/&[a-zA-Z]+;/g, "")
     .trim();
+  return ensurePeriodSpacing(result);
+}
+
+/**
+ * Ensures a space exists after periods followed by a letter (e.g. "sentence1.Sentence2" → "sentence1. Sentence2")
+ * @param {string} text - Input text
+ * @returns {string} Text with proper spacing after periods
+ */
+function ensurePeriodSpacing(text) {
+  if (!text) return text;
+  return text.replace(/\.(?=[A-ZÄÖÜ])/g, ". ");
 }
 
 function formatOpens(opens) {
@@ -85,10 +96,12 @@ function formatOpeningHours(hours) {
     return hours.join(", ");
   }
   const str = String(hours);
-  return str
-    .replace(/^\[|\]$/g, "")
-    .replace(/"/g, "")
-    .trim() || null;
+  return (
+    str
+      .replace(/^\[|\]$/g, "")
+      .replace(/"/g, "")
+      .trim() || null
+  );
 }
 
 /**
@@ -163,7 +176,8 @@ function transformPOI(poi) {
 
   const zurichCardDescriptionRaw = poi.zurichCardDescription;
   const zurichCardDescription = stripHtml(
-    typeof zurichCardDescriptionRaw === "object" && zurichCardDescriptionRaw !== null
+    typeof zurichCardDescriptionRaw === "object" &&
+      zurichCardDescriptionRaw !== null
       ? zurichCardDescriptionRaw.en || zurichCardDescriptionRaw.de || null
       : zurichCardDescriptionRaw,
   );

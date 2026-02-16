@@ -591,6 +591,16 @@ struct LandmarkDetailSheet: View {
         .padding(.vertical, 16)
     }
 
+    private func ensurePeriodSpacing(_ text: String) -> String {
+        let pattern = "\\.(?=[A-ZÄÖÜ])"
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
+        return regex.stringByReplacingMatches(
+            in: text,
+            range: NSRange(location: 0, length: text.utf16.count),
+            withTemplate: ". "
+        )
+    }
+
     private func decodeHTMLEntities(_ text: String) -> String {
         var result = text
 
@@ -640,7 +650,7 @@ struct LandmarkDetailSheet: View {
             }
         }
 
-        return result
+        return ensurePeriodSpacing(result)
     }
 
     private func stripHTMLTags(_ text: String) -> String {
@@ -680,7 +690,7 @@ struct LandmarkDetailSheet: View {
         result = lines.joined(separator: "\n")
         result = result.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        return result
+        return ensurePeriodSpacing(result)
     }
 }
 

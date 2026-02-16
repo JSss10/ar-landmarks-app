@@ -59,7 +59,7 @@ function toStr(val: any): string {
 function cleanText(text: any): string {
   const str = toStr(text)
   if (!str) return ''
-  return str
+  const result = str
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
@@ -84,6 +84,12 @@ function cleanText(text: any): string {
     .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec)))
     .replace(/&[a-zA-Z]+;/g, '')
     .trim()
+  return ensurePeriodSpacing(result)
+}
+
+function ensurePeriodSpacing(text: string): string {
+  if (!text) return text
+  return text.replace(/\.(?=[A-ZÄÖÜ])/g, '. ')
 }
 
 function cleanOpeningHours(hours: any): string {
