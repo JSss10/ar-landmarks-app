@@ -87,7 +87,6 @@ class LandmarkClassifier:
         print(f"\nCreating validation split ({int(split_ratio*100)}% of data)...")
         val_dir.mkdir(parents=True, exist_ok=True)
 
-        # For each class folder
         for class_dir in train_dir.iterdir():
             if not class_dir.is_dir():
                 continue
@@ -96,18 +95,15 @@ class LandmarkClassifier:
             val_class_dir = val_dir / class_name
             val_class_dir.mkdir(parents=True, exist_ok=True)
 
-            # Get all images
             images = list(class_dir.glob('*.jpg')) + list(class_dir.glob('*.png')) + \
                      list(class_dir.glob('*.jpeg')) + list(class_dir.glob('*.JPG'))
 
-            # Calculate validation size (at least 1 image)
+            # Use at least 1 image for validation even for very small classes
             val_size = max(1, int(len(images) * split_ratio))
 
-            # Randomly select validation images
-            random.seed(42)  # For reproducibility
+            random.seed(42)  # Fixed seed so the same images are always chosen
             val_images = random.sample(images, min(val_size, len(images)))
 
-            # Move to validation directory
             for img in val_images:
                 shutil.move(str(img), str(val_class_dir / img.name))
 
@@ -242,10 +238,9 @@ class LandmarkClassifier:
             val_loss /= len(self.val_loader)
             val_acc = 100. * val_correct / val_total
 
-            # Update learning rate
+            # Update learning rate based on validation loss
             scheduler.step(val_loss)
 
-            # Save history
             history['train_loss'].append(train_loss)
             history['train_acc'].append(train_acc)
             history['val_loss'].append(val_loss)
@@ -255,7 +250,6 @@ class LandmarkClassifier:
             print(f"  Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.2f}%")
             print(f"  Val Loss:   {val_loss:.4f} | Val Acc:   {val_acc:.2f}%")
 
-            # Save best model
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
                 self.save_model('best_model.pth')
@@ -270,7 +264,6 @@ class LandmarkClassifier:
 
     def save_model(self, filename='landmark_model.pth', save_dir=None):
         """Save the trained model."""
-        # Auto-detect models directory
         if save_dir is None:
             if Path('models').exists() or Path('.').resolve().name == 'ml_training':
                 save_dir = 'models'
@@ -301,19 +294,14 @@ def main():
     print("Landmark Recognition Model Training")
     print("="*60)
 
-    # Configuration
     EPOCHS = 25
     BATCH_SIZE = 32
     LEARNING_RATE = 0.001
 
-    # Initialize classifier
     classifier = LandmarkClassifier()
-
-    # Load data
     class_to_idx = classifier.load_data(batch_size=BATCH_SIZE)
 
-    # Save class mapping for later use
-    # Auto-detect path
+    # Save the class→index mapping so the converter script knows the label order
     if Path('data').exists():
         mapping_file = Path('data/pytorch_class_mapping.json')
     else:
@@ -324,18 +312,12 @@ def main():
         json.dump(class_to_idx, f, indent=2)
     print(f"✓ Saved class mapping to {mapping_file}")
 
-    # Build model
     classifier.build_model()
-
-    # Train model
     history = classifier.train(epochs=EPOCHS, learning_rate=LEARNING_RATE)
 
-    # Save final model
     final_path = classifier.save_model('landmark_model_final.pth')
     print(f"\n✓ Final model saved to {final_path}")
 
-    # Save training history
-    # Auto-detect path
     if Path('models').exists() or Path('.').resolve().name == 'ml_training':
         history_file = Path('models/training_history.json')
     else:

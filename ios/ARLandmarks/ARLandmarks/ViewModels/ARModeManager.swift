@@ -157,7 +157,7 @@ class ARModeManager: ObservableObject {
             }
     }
     
-    /// Current weather data
+    /// Fetches current weather for Zurich and stores it in the weather property
     func fetchWeather() {
         Task {
             do {

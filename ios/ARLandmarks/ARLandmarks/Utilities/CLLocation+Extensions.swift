@@ -10,6 +10,7 @@ import CoreLocation
 // MARK: - CLLocation Extension
 
 extension CLLocation {
+    /// Calculates the compass bearing from this location to the destination.
     /// - Parameter destination: Target location
     /// - Returns: Bearing in degrees (0-360, 0 = North)
     func bearing(to destination: CLLocation) -> Double {

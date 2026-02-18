@@ -19,8 +19,10 @@ class VisionService: ObservableObject {
     
     private var model: VNCoreMLModel?
     private var lastProcessingTime: Date = .distantPast
+    // Minimum time between two classification calls to avoid overloading the device
     private let minimumInterval: TimeInterval = 0.5
-    
+
+    // Maps the ML class name to the corresponding Supabase landmark ID
     private let classToLandmarkID: [String: String] = [
         "fraumunster": "36fffbdf-f13f-4001-8e85-dae9ed6c206d",
         "grossmunster": "1668b72b-3d97-4490-9d92-c8b4ef4af604",
@@ -43,6 +45,8 @@ class VisionService: ObservableObject {
         }
     }
 
+    // The model outputs raw scores, not probabilities. Softmax converts
+    // them into proper confidence values that add up to 100%.
     private func softmax(_ values: [Float]) -> [Float] {
         let maxVal = values.max() ?? 0
         let expValues = values.map { exp($0 - maxVal) }
@@ -102,6 +106,8 @@ class VisionService: ObservableObject {
                     print("  \(index + 1). \(item.observation.identifier): \(percent)%")
                 }
 
+                // Only accept the result if confidence is at least 90%.
+                // A lower threshold leads to too many wrong identifications.
                 guard topResult.confidence > 0.90 else {
                     print("Top result below threshold: \(Int(topResult.confidence * 100))% < 90%")
                     Task { @MainActor in

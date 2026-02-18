@@ -8,6 +8,7 @@
 import SwiftUI
 
 extension Color {
+    // Accepts 3-char (#RGB), 6-char (#RRGGBB), or 8-char (#AARRGGBB) hex strings
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0

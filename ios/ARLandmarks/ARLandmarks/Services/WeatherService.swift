@@ -13,7 +13,7 @@ actor WeatherService {
     private let apiKey: String
     private let baseURL = "https://api.openweathermap.org/data/2.5/weather"
     private var cache: [String: (weather: Weather, timestamp: Date)] = [:]
-    private let cacheValiditySeconds: TimeInterval = 600 // 10 Minuten
+    private let cacheValiditySeconds: TimeInterval = 600 // 10 minutes
 
     private init() {
         self.apiKey = (Bundle.main.object(forInfoDictionaryKey: "OPENWEATHER_API_KEY") as? String) ?? ""

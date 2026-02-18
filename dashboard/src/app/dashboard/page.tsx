@@ -169,6 +169,9 @@ export default function Home() {
     fetchData()
   }
 
+  // A landmark counts as manually edited when its updated_at timestamp is
+  // newer than last_synced_at, meaning someone changed it in the dashboard
+  // after the last API sync. These entries need a warning before overwriting.
   const getManuallyEditedLandmarks = (): Landmark[] => {
     return landmarks.filter((l) => {
       if (!l.zurich_tourism_id || !l.last_synced_at || !l.updated_at) return false
