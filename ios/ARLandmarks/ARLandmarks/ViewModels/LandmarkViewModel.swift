@@ -22,6 +22,7 @@ class LandmarkViewModel: ObservableObject {
         errorMessage = nil
         
         do {
+            // Fetch both in parallel so we don't wait for one before starting the other
             async let landmarksTask = service.fetchLandmarks()
             async let categoriesTask = service.fetchCategories()
             let (fetchedLandmarks, fetchedCategories) = try await (landmarksTask, categoriesTask)

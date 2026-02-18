@@ -16,10 +16,9 @@ def load_pytorch_model(model_path, num_classes):
     """Load the trained PyTorch model."""
     print(f"Loading PyTorch model from {model_path}...")
 
-    # Recreate model architecture
     model = models.mobilenet_v3_small(pretrained=False)
 
-    # Replace classifier (same as training)
+    # The classifier head must match the one used during training exactly
     num_features = model.classifier[0].in_features
     model.classifier = nn.Sequential(
         nn.Linear(num_features, 256),
@@ -28,7 +27,6 @@ def load_pytorch_model(model_path, num_classes):
         nn.Linear(256, num_classes)
     )
 
-    # Load weights
     checkpoint = torch.load(model_path, map_location='cpu')
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
@@ -50,14 +48,12 @@ def convert_to_coreml(pytorch_model, class_labels, output_path=None):
         else:
             output_path = 'ml_training/models/LandmarkClassifier.mlpackage'
 
-    # Define input shape (batch=1, channels=3, height=224, width=224)
+    # Input shape: batch=1, RGB image, 224×224 pixels (matches training transforms)
     example_input = torch.rand(1, 3, 224, 224)
 
-    # Trace the model
     print("  Tracing model...")
     traced_model = torch.jit.trace(pytorch_model, example_input)
 
-    # Convert to Core ML
     print("  Converting to Core ML...")
     mlmodel = ct.convert(
         traced_model,
@@ -72,16 +68,14 @@ def convert_to_coreml(pytorch_model, class_labels, output_path=None):
         compute_units=ct.ComputeUnit.ALL  # Use Neural Engine when available
     )
 
-    # Add metadata
     mlmodel.author = 'ARLandmarks ML Pipeline'
     mlmodel.short_description = 'AR Landmarks Recognition Model'
     mlmodel.version = '1.0'
     mlmodel.license = 'MIT'
 
-    # Add input/output descriptions
     mlmodel.input_description['image'] = 'Input image of a landmark (224x224 RGB)'
 
-    # Try to add output descriptions (names may vary)
+    # Output field names vary by coremltools version, so we try both and skip if missing
     try:
         if 'classLabel' in mlmodel.output_description:
             mlmodel.output_description['classLabel'] = 'Predicted landmark class'
@@ -90,14 +84,12 @@ def convert_to_coreml(pytorch_model, class_labels, output_path=None):
     except:
         pass  # Output names may vary, skip if not found
 
-    # Save model
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     mlmodel.save(str(output_path))
 
     print(f"✓ Core ML model saved to {output_path}")
 
-    # Print model info
     print(f"\nModel Information:")
     print(f"  Input: {mlmodel.input_description}")
     print(f"  Output: {mlmodel.output_description}")
@@ -128,12 +120,11 @@ def create_class_mapping_for_swift(class_to_idx, output_path=None):
     with open(original_mapping_path, 'r', encoding='utf-8') as f:
         original_mapping = json.load(f)
 
-    # Create reverse mapping: class_name -> landmark_id
+    # Build a reverse mapping: class_name → Supabase landmark ID (used in VisionService.swift)
     swift_mapping = {}
     for class_name, info in original_mapping.items():
         swift_mapping[class_name] = info['id']
 
-    # Save for Swift integration
     output_path = Path(output_path)
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(swift_mapping, f, indent=2)
@@ -164,7 +155,6 @@ def main():
         CLASS_MAPPING_PATH = Path('ml_training/data/pytorch_class_mapping.json')
         OUTPUT_PATH = Path('ml_training/models/LandmarkClassifier.mlpackage')
 
-    # Check if files exist
     if not MODEL_PATH.exists():
         print(f"Error: Model not found at {MODEL_PATH}")
         print("Run 'python scripts/train_model.py' first")
@@ -174,11 +164,10 @@ def main():
         print(f"Error: Class mapping not found at {CLASS_MAPPING_PATH}")
         sys.exit(1)
 
-    # Load class mapping
     with open(CLASS_MAPPING_PATH, 'r') as f:
         class_to_idx = json.load(f)
 
-    # Create ordered class labels
+    # Sort by index so the label list matches the model's output order
     class_labels = sorted(class_to_idx.keys(), key=lambda x: class_to_idx[x])
     num_classes = len(class_labels)
 
@@ -188,13 +177,8 @@ def main():
     if len(class_labels) > 5:
         print(f"  ... and {len(class_labels) - 5} more")
 
-    # Load PyTorch model
     pytorch_model, checkpoint = load_pytorch_model(MODEL_PATH, num_classes)
-
-    # Convert to Core ML
     mlmodel, output_path = convert_to_coreml(pytorch_model, class_labels, OUTPUT_PATH)
-
-    # Create Swift mapping
     swift_mapping = create_class_mapping_for_swift(class_to_idx)
 
     print("\n" + "="*60)

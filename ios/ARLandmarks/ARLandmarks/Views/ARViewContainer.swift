@@ -254,6 +254,8 @@ struct ARViewContainer: UIViewRepresentable {
             print("POI created: \(landmark.name) at \(position) with ID \(landmark.id)")
         }
 
+        // Creates a flat plane with a circular marker image that always rotates to face the camera.
+        // The image starts as a colored placeholder and gets replaced once the photo is downloaded.
         private func createBillboardMarker(for landmark: Landmark) -> ModelEntity {
             let placeholderImage = renderMarker(for: landmark, with: nil)
 
@@ -309,6 +311,8 @@ struct ARViewContainer: UIViewRepresentable {
             }.resume()
         }
 
+        // Draws a circle with a white border and either the landmark photo or a
+        // category-colored icon. Returns a UIImage used as the AR marker texture.
         private func renderMarker(for landmark: Landmark, with landmarkImage: UIImage?) -> UIImage {
             let circleSize: CGFloat = 100
             let borderWidth: CGFloat = 4
@@ -359,6 +363,7 @@ struct ARViewContainer: UIViewRepresentable {
             }
         }
 
+        // Scales the image so it fills the target rect completely (like UIView contentMode = .scaleAspectFill)
         private func aspectFillRect(for imageSize: CGSize, in targetRect: CGRect) -> CGRect {
             let widthRatio = targetRect.width / imageSize.width
             let heightRatio = targetRect.height / imageSize.height
